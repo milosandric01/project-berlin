@@ -29,7 +29,7 @@ async function login() {
       method: 'POST',
       body: { email: email.value, password: password.value },
     })
-    navigateTo('/')
+    navigateTo('/dashboard')
   } catch (e: any) {
     error.value = e.data?.message || 'Login failed'
   } finally {
