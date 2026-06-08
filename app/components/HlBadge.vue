@@ -1,33 +1,22 @@
 <template>
-  <span :class="['hl-badge', variantClass]">
+  <span
+    :class="[
+      'inline-flex items-center gap-[5px] h-[22px] px-[9px] rounded font-medium text-[11.5px] whitespace-nowrap',
+      variant === 'easy'    && 'bg-green-100 text-green-600',
+      variant === 'medium'  && 'bg-amber-100 text-amber-600',
+      variant === 'hard'    && 'bg-red-100 text-red-600',
+      variant === 'accent'  && 'bg-gray-100 text-gray-700',
+      variant === 'neutral' && 'bg-gray-100 text-gray-500',
+    ]"
+  >
     <slot />
   </span>
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   variant?: 'easy' | 'medium' | 'hard' | 'accent' | 'neutral'
 }>(), {
   variant: 'neutral',
 })
-
-const variantClass = computed(() => {
-  const map: Record<string, string> = {
-    easy: 'b-easy',
-    medium: 'b-med',
-    hard: 'b-hard',
-    accent: 'hl-badge--accent',
-    neutral: 'hl-badge--neutral',
-  }
-  return map[props.variant]
-})
 </script>
-
-<style scoped>
-.hl-badge {
-  display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px;
-  border-radius: var(--radius-sm); font-size: 11.5px; font-weight: 500; white-space: nowrap;
-}
-.hl-badge--accent { background: var(--accent-bg); color: var(--accent-fg); }
-.hl-badge--neutral { background: var(--bg-subtle); color: var(--fg-tertiary); }
-</style>

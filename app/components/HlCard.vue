@@ -1,5 +1,12 @@
 <template>
-  <div class="card" :class="{ 'card-pad': pad, 'card--flat': flat, 'card--hover': hover }">
+  <div
+    :class="[
+      'bg-white border-none rounded-3xl shadow-sm',
+      pad && 'p-5',
+      flat && 'shadow-none',
+      hover && 'cursor-pointer transition-colors duration-[120ms] hover:border-gray-300',
+    ]"
+  >
     <slot />
   </div>
 </template>
@@ -15,10 +22,3 @@ withDefaults(defineProps<{
   hover: false,
 })
 </script>
-
-<style scoped>
-.card-pad { padding: 20px 22px; }
-.card--flat { box-shadow: none; }
-.card--hover { cursor: pointer; transition: border-color var(--dur-fast) var(--ease-out); }
-.card--hover:hover { border-color: var(--border-strong); }
-</style>

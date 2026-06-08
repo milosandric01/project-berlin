@@ -1,5 +1,5 @@
 <template>
-  <span class="topic-dot" :style="{ background: color, width: size + 'px', height: size + 'px' }" />
+  <span class="rounded-full flex-none" :style="{ background: color, width: size + 'px', height: size + 'px' }" />
 </template>
 
 <script setup lang="ts">

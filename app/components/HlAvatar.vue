@@ -1,5 +1,8 @@
 <template>
-  <span class="avatar" :style="{ width: size + 'px', height: size + 'px', fontSize: (size * 0.4) + 'px' }">
+  <span
+    class="inline-flex items-center justify-center rounded-full text-white font-semibold flex-none tracking-wide"
+    :style="{ width: size + 'px', height: size + 'px', fontSize: (size * 0.4) + 'px', backgroundColor: '#FF6B35' }"
+  >
     <slot>{{ initials }}</slot>
   </span>
 </template>

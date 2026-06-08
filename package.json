@@ -7,13 +7,29 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx server/database/seed.ts",
+    "db:purge": "tsx server/database/purge.ts"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.111",
+    "@iconify-json/simple-icons": "^1.2.85",
     "@nuxt/icon": "^2.2.3",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.2",
     "nuxt": "4.4.6",
+    "postgres": "^3.4.9",
     "vue": "^3.5.34",
     "vue-router": "^5.0.7"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@types/bcryptjs": "^2.4.6",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.22.4"
   }
 }

@@ -1,197 +1,152 @@
 <template>
-  <div class="hl-shell">
+  <!-- App shell: sidebar + main -->
+  <div class="grid h-screen overflow-hidden bg-sand-50 text-gray-900 text-sm" style="grid-template-columns: 248px 1fr">
+
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="side-brand">
-        <img src="/honeloop-mark.svg" alt="" />
-        <span class="word">Honeloop</span>
+    <aside class="flex flex-col h-full px-3 py-4 gap-0.5 bg-sand-50">
+
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5 px-2 pb-3.5 pt-1.5">
+        <!-- <img src="/honeloop-mark.svg" alt="" class="w-[26px] h-[26px]" /> -->
+        <span class="text-[20px] font-semibold tracking-tight"><b>flowiz.</b></span>
       </div>
 
-      <div class="side-search">
-        <Icon name="lucide:search" :size="15" class="hicon" />
-        <span class="ph">Search questions</span>
-        <kbd>/</kbd>
-      </div>
+      <!-- Search -->
+      <!-- <div class="flex items-center gap-2 h-9 px-2.5 mb-2 rounded-lg cursor-text text-gray-500 bg-sand-200">
+        <Icon name="lucide:search" :size="15" class="text-gray-400" />
+        <span class="flex-1 text-[13px]">Search questions</span>
+        <kbd class="font-mono text-[11px] text-gray-400 bg-sand-300 rounded px-1.5 py-px">/</kbd>
+      </div> -->
 
-      <div class="nav-section">
-        <button v-for="n in navItems" :key="n.id" :class="['nav-item', { 'is-active': n.id === 'today' }]">
-          <Icon :name="n.icon" :size="16" class="hicon" />
+      <!-- Nav -->
+      <div class="flex flex-col gap-1">
+        <button
+          v-for="n in navItems"
+          :key="n.id"
+          :class="[
+            'flex items-center gap-2.5 whitespace-nowrap h-[32px] px-2.5 rounded-lg text-sm cursor-pointer border-none text-left transition-[background,color] duration-[120ms]',
+            n.id === activeNav
+              ? 'font-medium text-gray-900 bg-sand-400'
+              : 'font-[450] text-gray-900 bg-transparent hover:bg-sand-200',
+          ]"
+          @click="activeNav = n.id"
+        >
+          <Icon :name="n.icon" :size="16" class="text-gray-600" />
           {{ n.label }}
-          <span v-if="n.count != null" class="count">{{ n.count }}</span>
+          <span v-if="n.count != null" class="ml-auto font-mono text-[11px] text-gray-400">{{ n.count }}</span>
         </button>
       </div>
 
-      <div class="nav-label">Topics</div>
-      <div class="nav-section">
-        <button v-for="t in topicList" :key="t.id" class="nav-item">
-          <HlTopicDot :color="t.color" :style="{ marginLeft: '3px', marginRight: '3px' }" />
-          {{ t.label }}
-        </button>
-      </div>
+      <div class="flex-1" />
 
-      <div class="side-spacer" />
-
-      <button class="nav-item ask">
-        <Icon name="lucide:sparkles" :size="16" class="hicon" />
-        Ask Honeloop
-      </button>
-
-      <div class="side-user-wrap">
-        <div v-if="userMenuOpen" class="user-menu">
-          <div class="um-header">{{ user?.email }}</div>
-          <div class="um-sep" />
-          <button class="um-item" @click="logout">
-            <Icon name="lucide:log-out" :size="14" class="hicon" />
-            Log out
+      <!-- User card -->
+      <div class="relative">
+        <!-- User menu -->
+        <div v-if="userMenuOpen" class="absolute bottom-[calc(100%+4px)] left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-md p-1 z-[100]">
+          <button class="flex items-center gap-2 w-full px-2.5 py-[7px] rounded-md text-[13.5px] text-gray-900 bg-transparent border-none cursor-pointer hover:bg-[#F5F5F5] text-left" @click="logout">
+            <Icon name="lucide:log-out" :size="14" class="text-gray-600" />
+            Sign out
           </button>
         </div>
-        <button class="side-user" @click="userMenuOpen = !userMenuOpen">
-          <HlAvatar :initials="userInitials" :size="30" />
-          <div :style="{ flex: 1, minWidth: 0 }">
-            <div class="nm">{{ userDisplayName }}</div>
-            <div class="st">
-              <Icon name="lucide:flame" :size="12" class="hicon" />
-              {{ STREAK.current }} day streak
-            </div>
+
+        <button
+          class="flex items-center justify-between w-full px-3.5 py-3 rounded-xl border border-sand-400 cursor-pointer font-[inherit] text-left transition-colors duration-[120ms] mb-1 bg-sand-100 hover:bg-sand-200"
+          @click="userMenuOpen = !userMenuOpen"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold text-gray-900 leading-snug">{{ user?.email }}</div>
+            <div class="text-xs text-gray-500 mt-px">{{ STREAK.current }} day streak</div>
           </div>
-          <Icon name="lucide:chevrons-up-down" :size="14" :style="{ color: 'var(--fg-quaternary)' }" />
+          <div class="flex-none w-9 h-9 rounded-full flex items-center justify-center bg-sand-300">
+            <HlAvatar :initials="userInitials" :size="28" />
+          </div>
         </button>
       </div>
     </aside>
 
-    <div v-if="userMenuOpen" class="user-menu-overlay" @click="userMenuOpen = false" />
+    <!-- Click-away overlay for user menu -->
+    <div v-if="userMenuOpen" class="fixed inset-0 z-[99]" @click="userMenuOpen = false" />
 
-    <!-- MAIN CONTENT -->
-    <main class="main--wide">
-      <div class="work-inner">
-        <div class="topbar">
-          <div>
-            <div class="eyebrow">Good morning, Alex · Tuesday, June 3</div>
-            <h1>Today</h1>
-          </div>
-          <div class="right">
-            <HlStreakChip>
-              <Icon name="lucide:flame" :size="14" class="hicon" />
-              47
-            </HlStreakChip>
-          </div>
-        </div>
+    <!-- MAIN -->
+    <main class="h-full overflow-y-auto bg-sand-50" :class="activeNav === 'skills' && !activeFlow ? 'flex items-start' : 'flex items-center justify-center'">
+      <div class="w-full max-w-[680px] px-12 pt-8 pb-9 mx-auto">
 
-        <div class="work-grid">
-          <!-- LEFT COLUMN -->
-          <div>
-            <div class="hero-band">
-              <div class="hb-main">
-                <div class="eyebrow">Today&rsquo;s loop · 4 questions</div>
-                <h2>Four questions to keep you interview-sharp.</h2>
-                <div class="hb-meta">
-                  <Icon name="lucide:clock" :size="13" class="hicon" />
-                  <span>About 6 minutes</span>
-                  <span :style="{ color: 'var(--accent-300)' }">·</span>
-                  <Icon name="lucide:target" :size="13" :style="{ color: 'var(--accent)' }" class="hicon" />
-                  <span>2 target your weak spots</span>
+        <!-- Skills catalogue -->
+        <template v-if="activeNav === 'skills' && !activeFlow">
+          <SkillsCatalogue />
+        </template>
+
+        <!-- Active flow session -->
+        <template v-else-if="activeFlow">
+          <FlowSession :flow="activeFlow" @exit="onFlowExit" @finish="onFlowFinish" />
+        </template>
+
+        <!-- Pick a new flow -->
+        <template v-else-if="pickingNewFlow">
+          <div class="relative isolate">
+            <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
+            <FlowPicker @start="onPickFlow" />
+          </div>
+        </template>
+
+        <!-- Cold start: no flows started yet -->
+        <template v-else-if="!hasStartedFlows">
+          <div class="relative isolate">
+            <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
+            <FlowPicker @start="onPickFlow" />
+          </div>
+        </template>
+
+        <!-- Today: recent flows -->
+        <template v-else>
+          <div class="w-full font-sans">
+            <div class="mb-5">
+              <div class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400 mb-1">Today</div>
+              <h2 class="text-[22px] font-medium tracking-[-0.01em] text-gray-900">Recent flows</h2>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <div
+                v-for="recent in recentFlows"
+                :key="recent.flow.id"
+                class="bg-white rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xs"
+              >
+                <div class="flex-1 min-w-0">
+                  <div class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400 mb-0.5">{{ recent.flow.path }}</div>
+                  <div class="text-[15px] font-medium text-gray-900 leading-snug truncate">{{ recent.flow.title }}</div>
+                  <div class="flex items-center gap-2 mt-1.5">
+                    <div class="flex gap-px">
+                      <div
+                        v-for="i in 12"
+                        :key="i"
+                        class="h-1 w-3 rounded-full"
+                        :class="i <= recent.progress ? 'bg-gray-800' : 'bg-gray-200'"
+                      />
+                    </div>
+                    <span class="text-[12px] text-gray-400 tabular-nums">{{ recent.progress }}/12</span>
+                  </div>
                 </div>
-              </div>
-              <div class="hb-side">
-                <div class="hb-prog">
-                  <SegRing :done="0" :total="4" :size="64" />
-                  <span class="hb-prog-cap">done today</span>
-                </div>
-                <HlButton variant="primary" size="md">
-                  <Icon name="lucide:play" :size="15" />
-                  <span>Start loop</span>
+                <HlButton
+                  variant="secondary"
+                  size="sm"
+                  @click="resumeFlow(recent)"
+                >
+                  {{ recent.progress === 0 ? 'Start' : recent.progress === 12 ? 'Redo' : 'Continue' }}
+                  <Icon name="lucide:arrow-right" :size="13" />
                 </HlButton>
               </div>
             </div>
 
-            <div class="section-head" :style="{ marginTop: '18px', marginBottom: '10px' }">
-              <h2>Recommended for you</h2>
-              <span class="link">See all <Icon name="lucide:arrow-right" :size="13" /></span>
-            </div>
-            <div class="section-sub" :style="{ marginBottom: '14px' }">Weak spots first, then due for review.</div>
-
-            <div class="rec-list">
-              <div v-for="(q, i) in RECOMMENDED" :key="q.id" class="rec-card">
-                <span class="rc-dot" :style="{ background: TOPICS[q.topic].color }" />
-                <div class="rc-body">
-                  <div class="rc-q">{{ q.q }}</div>
-                  <div class="rc-meta">
-                    <span class="tn">{{ TOPICS[q.topic].label }}</span>
-                    <DiffBadge :level="q.difficulty" />
-                    <HlWhyTag v-if="i < 3" type="weak">
-                      <Icon name="lucide:target" :size="11" class="hicon" />weak spot
-                    </HlWhyTag>
-                  </div>
-                </div>
-                <span class="rc-go">
-                  <Icon name="lucide:arrow-up-right" :size="16" />
-                </span>
-              </div>
-            </div>
+            <button
+              class="mt-4 inline-flex items-center gap-1.5 text-[13px] text-gray-400 bg-transparent border-none cursor-pointer font-[inherit] p-0 hover:text-gray-700 transition-colors duration-[120ms]"
+              @click="pickingNewFlow = true"
+            >
+              <Icon name="lucide:plus" :size="13" />
+              Pick a new flow
+            </button>
           </div>
+        </template>
 
-          <!-- RIGHT RAIL -->
-          <div class="rail">
-            <HlCard class="rail-card rail-streak">
-              <div class="rc-h"><Icon name="lucide:flame" :size="14" class="hicon" />Streak</div>
-              <div class="top">
-                <span class="big">{{ STREAK.current }}</span>
-                <span class="sub">days · longest {{ STREAK.longest }}</span>
-              </div>
-              <div class="rail-week">
-                <div v-for="(d, i) in weekDays" :key="i" :class="['d', { on: STREAK.week[i] === 1, today: STREAK.week[i] === 2 }]">
-                  {{ d }}
-                </div>
-              </div>
-            </HlCard>
-
-            <HlCard class="rail-card">
-              <div class="rc-h"><Icon name="lucide:target" :size="14" class="hicon" />Mastery by topic<span class="more">6 topics</span></div>
-              <div class="mini-meter">
-                <div v-for="m in MASTERY" :key="m.topic" class="mini-bar">
-                  <span class="nm">{{ TOPICS[m.topic].label }}</span>
-                  <span :class="['trend', m.trend > 0 ? 'up' : m.trend < 0 ? 'down' : 'flat']">
-                    <Icon :name="m.trend > 0 ? 'lucide:arrow-up' : m.trend < 0 ? 'lucide:arrow-down' : 'lucide:minus'" :size="11" />
-                    {{ Math.abs(m.trend) }}
-                  </span>
-                  <span class="track"><span class="fill" :style="{ width: m.pct + '%', background: TOPICS[m.topic].color }" /></span>
-                </div>
-              </div>
-            </HlCard>
-          </div>
-        </div>
-
-        <!-- FULL-WIDTH CONSISTENCY STRIP -->
-        <HlCard class="consistency-card">
-          <div class="cons-head">
-            <div class="rc-h"><Icon name="lucide:calendar-check" :size="14" class="hicon" />Daily consistency</div>
-            <span class="cons-sub">Last 17 weeks · keeping the loop alive</span>
-          </div>
-          <div class="cons-main">
-            <div class="cons-heat">
-              <div class="heat-grid">
-                <div v-for="(col, ci) in HEAT" :key="ci" class="heat-col">
-                  <span v-for="(v, ri) in col" :key="ri" :class="'heat-cell lv' + v" />
-                </div>
-              </div>
-              <div class="heat-legend">
-                <span>Less</span>
-                <span class="heat-cell lv0" />
-                <span class="heat-cell lv1" />
-                <span class="heat-cell lv2" />
-                <span class="heat-cell lv3" />
-                <span>More</span>
-              </div>
-            </div>
-            <div class="cons-divider" />
-            <div class="cons-stats">
-              <div class="cs"><div class="v">{{ STREAK.current }}</div><div class="k">current streak</div></div>
-              <div class="cs"><div class="v">{{ STREAK.longest }}</div><div class="k">longest streak</div></div>
-              <div class="cs"><div class="v">{{ activeThisWeek }} / 7</div><div class="k">active this week</div></div>
-              <div class="cs"><div class="v">{{ STREAK.totalSolved }}</div><div class="k">solved all-time</div></div>
-            </div>
-          </div>
-        </HlCard>
       </div>
     </main>
   </div>
@@ -200,7 +155,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: false, middleware: 'auth' })
 
-const { data: authData } = await useFetch('/api/auth/user')
+const { data: authData } = await useFetch<{ user: { email: string } | null }>('/api/auth/user')
 const user = computed(() => authData.value?.user)
 
 const userDisplayName = computed(() => {
@@ -214,51 +169,105 @@ const userInitials = computed(() => {
 
 const userMenuOpen = ref(false)
 
+const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+
+const QUOTES = [
+  'Interviews reward the prepared mind.',
+  'One question a day keeps the panic away.',
+  'Clarity comes from doing, not just reading.',
+  'Every concept you struggle with today is one less surprise in the room.',
+  'The best time to review was yesterday. The second best time is now.',
+  'Hard questions are just easy questions you haven\'t seen enough times.',
+  'Slow is smooth, smooth is fast.',
+  'You don\'t rise to the level of the challenge — you fall to the level of your preparation.',
+  'Consistency beats intensity every single week.',
+  'A short session today still counts.',
+  'The gap between you and the job is just reps.',
+  'Understanding why is worth ten times memorizing what.',
+  'Build the habit, the skill follows.',
+  'Even five minutes sharpens the edge.',
+  'Systems thinking is a superpower. Practice it daily.',
+  'The candidate who can explain trade-offs wins.',
+  'Confidence is just preparation with good posture.',
+  'Own your weak spots before an interviewer finds them.',
+  'Depth over breadth, every time.',
+  'Show your reasoning — that\'s what they\'re really hiring.',
+  'Problems you\'ve seen before are puzzles. Problems you haven\'t are adventures.',
+  'The best engineers ask better questions, not just give faster answers.',
+  'Design for the next engineer, not just the next deadline.',
+  'Mastery is just novelty that became familiar.',
+  'Your streak is proof that small bets compound.',
+  'Read the question twice. Answer it once. Correctly.',
+  'Thinking out loud is a skill. Practice it here.',
+  'The nervous energy in an interview is just excitement in disguise.',
+  'Every hard problem has a simpler version. Start there.',
+  'Today\'s question is tomorrow\'s muscle memory.',
+]
+
+const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86_400_000)
+const quoteOffset = ref(0)
+const dailyQuote = computed(() => QUOTES[(dayOfYear + quoteOffset.value) % QUOTES.length])
+
 async function logout() {
   userMenuOpen.value = false
   await $fetch('/api/auth/logout', { method: 'POST' })
   await navigateTo('/login')
 }
 
-const TOPICS: Record<string, { id: string; label: string; color: string }> = {
-  'system-design':   { id: 'system-design',   label: 'System design',      color: '#3e63dd' },
-  'data-structures': { id: 'data-structures', label: 'Data structures',    color: '#7c5cde' },
-  'js-ts':           { id: 'js-ts',           label: 'JavaScript / TS',    color: '#2aa7a0' },
-  'databases':       { id: 'databases',       label: 'Databases',          color: '#30a46c' },
-  'distributed':     { id: 'distributed',     label: 'Distributed systems',color: '#c99a2e' },
-  'behavioral':      { id: 'behavioral',      label: 'Behavioral',         color: '#d76b9a' },
-}
-
-const topicList = Object.values(TOPICS).slice(0, 5)
-
 const navItems = [
-  { id: 'today',    label: 'Today',    icon: 'lucide:sun',         count: 4 },
+  { id: 'today',    label: 'Today',    icon: 'lucide:sun',         count: null },
   { id: 'practice', label: 'Practice', icon: 'lucide:rotate-ccw',  count: null },
-  { id: 'library',  label: 'Library',  icon: 'lucide:library',     count: null },
+  { id: 'skills',   label: 'Skills',   icon: 'lucide:layers',      count: null },
   { id: 'progress', label: 'Progress', icon: 'lucide:trending-up', count: null },
 ]
+const activeNav = ref('today')
+
+import type { EssentialFlow } from '~/components/FlowPicker.vue'
+
+interface RecentFlow {
+  flow: EssentialFlow
+  progress: number  // questions answered (0–12)
+  startedAt: Date
+}
+
+const recentFlows = ref<RecentFlow[]>([])
+const activeFlow = ref<EssentialFlow | null>(null)
+const pickingNewFlow = ref(false)
+
+const hasStartedFlows = computed(() => recentFlows.value.length > 0)
+
+function onPickFlow(flow: EssentialFlow) {
+  pickingNewFlow.value = false
+  activeFlow.value = flow
+  if (!recentFlows.value.find(r => r.flow.id === flow.id)) {
+    recentFlows.value.unshift({ flow, progress: 0, startedAt: new Date() })
+  }
+}
+
+function onFlowExit(questionIndex: number) {
+  if (activeFlow.value) {
+    const recent = recentFlows.value.find(r => r.flow.id === activeFlow.value!.id)
+    if (recent) recent.progress = questionIndex
+  }
+  activeFlow.value = null
+}
+
+function onFlowFinish() {
+  if (activeFlow.value) {
+    const recent = recentFlows.value.find(r => r.flow.id === activeFlow.value!.id)
+    if (recent) recent.progress = 12
+  }
+  activeFlow.value = null
+}
+
+function resumeFlow(recent: RecentFlow) {
+  activeFlow.value = recent.flow
+}
 
 const STREAK = { current: 47, longest: 63, totalSolved: 612, week: [1, 1, 1, 1, 2, 0, 0] }
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-const activeThisWeek = STREAK.week.filter(v => v === 1).length
 
-const MASTERY = [
-  { topic: 'databases',       pct: 41, trend: -3 },
-  { topic: 'distributed',     pct: 52, trend: +6 },
-  { topic: 'data-structures', pct: 64, trend: +2 },
-  { topic: 'js-ts',           pct: 70, trend: 0 },
-  { topic: 'system-design',   pct: 78, trend: +4 },
-  { topic: 'behavioral',      pct: 83, trend: +1 },
-]
 
-const RECOMMENDED = [
-  { id: 'r1', topic: 'databases',       difficulty: 'Medium', q: 'Explain isolation levels using a concrete double-booking example.' },
-  { id: 'r2', topic: 'distributed',     difficulty: 'Hard',   q: 'What breaks first when you add a second region, and how do you find out?' },
-  { id: 'r3', topic: 'databases',       difficulty: 'Hard',   q: 'Design a schema for a multi-tenant app that stays fast at 10k tenants.' },
-  { id: 'r4', topic: 'data-structures', difficulty: 'Medium', q: 'When is a heap the right call over a sorted array?' },
-]
-
-// Generate 17 weeks x 7 days heatmap
 const HEAT = Array.from({ length: 17 }, () =>
   Array.from({ length: 7 }, () => Math.random() < 0.18 ? 0 : 1 + Math.floor(Math.random() * 3))
 )

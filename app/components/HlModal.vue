@@ -1,17 +1,29 @@
 <template>
   <Teleport to="body">
-    <div v-if="open" class="hl-overlay" @click="$emit('close')">
-      <div class="hl-modal" @click.stop>
-        <div class="hl-modal__head">
-          <h3 class="hl-modal__title">
+    <div
+      v-if="open"
+      class="fixed inset-0 z-[1000] bg-[rgba(13,15,18,0.4)] flex items-center justify-center backdrop-blur-sm animate-[fadeIn_120ms_cubic-bezier(0.22,1,0.36,1)]"
+      @click="$emit('close')"
+    >
+      <div
+        class="bg-white border border-gray-200 rounded-xl shadow-xl w-full max-w-[480px] max-h-[85vh] flex flex-col animate-[scaleIn_180ms_cubic-bezier(0.22,1,0.36,1)]"
+        @click.stop
+      >
+        <div class="flex items-center justify-between px-[22px] pt-[18px]">
+          <h3 class="text-base font-semibold tracking-tight">
             <slot name="title">{{ title }}</slot>
           </h3>
-          <button class="hl-modal__close" @click="$emit('close')">&times;</button>
+          <button
+            class="w-7 h-7 rounded-md border-none bg-transparent text-gray-500 text-xl cursor-pointer flex items-center justify-center hover:bg-gray-100 hover:text-gray-900 transition-colors duration-[120ms]"
+            @click="$emit('close')"
+          >
+            &times;
+          </button>
         </div>
-        <div class="hl-modal__body">
+        <div class="px-[22px] py-4 overflow-y-auto flex-1">
           <slot />
         </div>
-        <div v-if="$slots.footer" class="hl-modal__foot">
+        <div v-if="$slots.footer" class="px-[22px] py-3.5 border-t border-gray-150 flex items-center justify-end gap-2">
           <slot name="footer" />
         </div>
       </div>
@@ -30,41 +42,7 @@ defineEmits<{
 }>()
 </script>
 
-<style scoped>
-.hl-overlay {
-  position: fixed; inset: 0; z-index: 1000;
-  background: rgba(13, 15, 18, 0.4);
-  display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(2px);
-  animation: fadeIn var(--dur-fast) var(--ease-out);
-}
-.hl-modal {
-  background: var(--bg-surface); border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl); box-shadow: var(--shadow-xl);
-  width: 100%; max-width: 480px; max-height: 85vh;
-  display: flex; flex-direction: column;
-  animation: scaleIn var(--dur-base) var(--ease-out);
-}
-.hl-modal__head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 22px 0;
-}
-.hl-modal__title {
-  font-size: 16px; font-weight: 600; letter-spacing: -0.01em;
-}
-.hl-modal__close {
-  width: 28px; height: 28px; border-radius: var(--radius-md);
-  border: none; background: transparent; color: var(--fg-tertiary);
-  font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-}
-.hl-modal__close:hover { background: var(--bg-hover); color: var(--fg-primary); }
-.hl-modal__body { padding: 16px 22px 22px; overflow-y: auto; flex: 1; }
-.hl-modal__foot {
-  padding: 14px 22px; border-top: 1px solid var(--border-subtle);
-  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
-}
-
+<style>
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 </style>
