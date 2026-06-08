@@ -136,7 +136,10 @@ export interface EssentialFlow {
   promptTypes: string[]
 }
 
+const props = defineProps<{ flows?: EssentialFlow[] }>()
 const emit = defineEmits<{ start: [flow: EssentialFlow] }>()
+
+const flows = computed(() => props.flows ?? DEFAULT_FLOWS)
 
 // Carousel layout (px). Carousel container is 680px (parent max-w minus the -mx-12 breakout).
 // Center card: 500px. Peek on each side: (680 - 500) / 2 = 90px.
@@ -148,7 +151,7 @@ const OFFSET = (680 - CARD) / 2  // 90px — centers first card
 const current = ref(0)
 
 function go(i: number) {
-  current.value = Math.max(0, Math.min(flows.length - 1, i))
+  current.value = Math.max(0, Math.min(flows.value.length - 1, i))
 }
 
 // Touch / swipe
@@ -172,7 +175,7 @@ function onTouchEnd() {
   drag.value = 0
 }
 
-const flows: EssentialFlow[] = [
+const DEFAULT_FLOWS: EssentialFlow[] = [
   {
     id: 'networking',
     path: 'BACKEND / NETWORKING',

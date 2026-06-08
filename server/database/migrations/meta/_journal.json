@@ -8,6 +8,34 @@
       "when": 1780901228809,
       "tag": "0000_light_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780903890918,
+      "tag": "0001_woozy_may_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780904992941,
+      "tag": "0002_fancy_raider",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780916637108,
+      "tag": "0003_peaceful_shatterstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780921684738,
+      "tag": "0004_foamy_diamondback",
+      "breakpoints": true
     }
   ]
 }

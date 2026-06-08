@@ -3,14 +3,14 @@
 
     <!-- Header -->
     <div class="mb-8">
-      <div class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400 mb-1">Catalogue</div>
+      <!-- <div class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400 mb-1">Catalogue</div> -->
       <h2 class="text-[22px] font-medium tracking-[-0.01em] text-gray-900">Skills</h2>
       <p class="text-[13px] text-gray-500 mt-1">The building blocks of your flows. {{ totalSkills }} skills across {{ categories.length }} categories.</p>
     </div>
 
     <!-- Categories -->
     <div class="flex flex-col gap-6">
-      <div v-for="cat in categories" :key="cat.id">
+      <div v-for="cat in categories" :key="cat.id" class="bg-white rounded-xl border border-gray-100 p-4">
 
         <!-- Category header -->
         <div class="flex items-center gap-2 mb-3">

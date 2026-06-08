@@ -19,7 +19,7 @@
       </div> -->
 
       <!-- Nav -->
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-0.5">
         <button
           v-for="n in navItems"
           :key="n.id"
@@ -29,12 +29,35 @@
               ? 'font-medium text-gray-900 bg-sand-400'
               : 'font-[450] text-gray-900 bg-transparent hover:bg-sand-200',
           ]"
-          @click="activeNav = n.id"
+          @click="activeNav = n.id; selectedSessionId = null"
         >
           <Icon :name="n.icon" :size="16" class="text-gray-600" />
           {{ n.label }}
           <span v-if="n.count != null" class="ml-auto font-mono text-[11px] text-gray-400">{{ n.count }}</span>
         </button>
+
+        <!-- Recent sessions — sub-items under Progress -->
+        <template v-if="recentSessions.length">
+          <div class="font-mono text-[10px] tracking-[0.06em] uppercase text-gray-400 px-2.5 pt-3 pb-1">Recent Flows</div>
+          <button
+            v-for="s in recentSessions"
+            :key="s.id"
+            :class="[
+              'flex items-center gap-2 w-full px-2.5 py-[5px] rounded-lg text-left border-none cursor-pointer transition-colors duration-[120ms]',
+              selectedSessionId === s.id
+                ? 'bg-sand-400 font-medium'
+                : 'bg-transparent hover:bg-sand-200',
+            ]"
+            @click="resumeSession(s)"
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full flex-none"
+              :class="s.completedAt ? 'bg-gray-300' : 'bg-gray-500'"
+            />
+            <span class="flex-1 text-sm font-[450] text-gray-900 truncate">{{ s.flowName }}</span>
+            <span class="ml-auto font-mono text-[11px] text-gray-400 flex-none">{{ s.questionsAnswered }}/{{ s.goalQuestions }}</span>
+          </button>
+        </template>
       </div>
 
       <div class="flex-1" />
@@ -55,7 +78,7 @@
         >
           <div class="flex-1 min-w-0">
             <div class="text-sm font-semibold text-gray-900 leading-snug">{{ user?.email }}</div>
-            <div class="text-xs text-gray-500 mt-px">{{ STREAK.current }} day streak</div>
+            <div class="text-xs text-gray-500 mt-px">0 day streak</div>
           </div>
           <div class="flex-none w-9 h-9 rounded-full flex items-center justify-center bg-sand-300">
             <HlAvatar :initials="userInitials" :size="28" />
@@ -68,7 +91,7 @@
     <div v-if="userMenuOpen" class="fixed inset-0 z-[99]" @click="userMenuOpen = false" />
 
     <!-- MAIN -->
-    <main class="h-full overflow-y-auto bg-sand-50" :class="activeNav === 'skills' && !activeFlow ? 'flex items-start' : 'flex items-center justify-center'">
+    <main class="h-full overflow-y-auto bg-sand-50" :class="(activeNav === 'skills' || activeNav === 'flows') && !activeFlow ? 'flex items-start' : 'flex items-center justify-center'">
       <div class="w-full max-w-[680px] px-12 pt-8 pb-9 mx-auto">
 
         <!-- Skills catalogue -->
@@ -76,75 +99,22 @@
           <SkillsCatalogue />
         </template>
 
+        <!-- Flows management -->
+        <template v-else-if="activeNav === 'flows' && !activeFlow">
+          <FlowsPage />
+        </template>
+
         <!-- Active flow session -->
         <template v-else-if="activeFlow">
-          <FlowSession :flow="activeFlow" @exit="onFlowExit" @finish="onFlowFinish" />
+          <FlowSession :flow="activeFlow" :initial-question="activeInitialQuestion" @exit="onFlowExit" @finish="onFlowFinish" @question-answered="onQuestionAnswered" />
         </template>
 
-        <!-- Pick a new flow -->
-        <template v-else-if="pickingNewFlow">
-          <div class="relative isolate">
-            <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
-            <FlowPicker @start="onPickFlow" />
-          </div>
-        </template>
-
-        <!-- Cold start: no flows started yet -->
-        <template v-else-if="!hasStartedFlows">
-          <div class="relative isolate">
-            <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
-            <FlowPicker @start="onPickFlow" />
-          </div>
-        </template>
-
-        <!-- Today: recent flows -->
+        <!-- Today: active flow card (PRD Practice page) -->
         <template v-else>
-          <div class="w-full font-sans">
-            <div class="mb-5">
-              <div class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400 mb-1">Today</div>
-              <h2 class="text-[22px] font-medium tracking-[-0.01em] text-gray-900">Recent flows</h2>
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <div
-                v-for="recent in recentFlows"
-                :key="recent.flow.id"
-                class="bg-white rounded-2xl px-5 py-4 flex items-center gap-4 shadow-xs"
-              >
-                <div class="flex-1 min-w-0">
-                  <div class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400 mb-0.5">{{ recent.flow.path }}</div>
-                  <div class="text-[15px] font-medium text-gray-900 leading-snug truncate">{{ recent.flow.title }}</div>
-                  <div class="flex items-center gap-2 mt-1.5">
-                    <div class="flex gap-px">
-                      <div
-                        v-for="i in 12"
-                        :key="i"
-                        class="h-1 w-3 rounded-full"
-                        :class="i <= recent.progress ? 'bg-gray-800' : 'bg-gray-200'"
-                      />
-                    </div>
-                    <span class="text-[12px] text-gray-400 tabular-nums">{{ recent.progress }}/12</span>
-                  </div>
-                </div>
-                <HlButton
-                  variant="secondary"
-                  size="sm"
-                  @click="resumeFlow(recent)"
-                >
-                  {{ recent.progress === 0 ? 'Start' : recent.progress === 12 ? 'Redo' : 'Continue' }}
-                  <Icon name="lucide:arrow-right" :size="13" />
-                </HlButton>
-              </div>
-            </div>
-
-            <button
-              class="mt-4 inline-flex items-center gap-1.5 text-[13px] text-gray-400 bg-transparent border-none cursor-pointer font-[inherit] p-0 hover:text-gray-700 transition-colors duration-[120ms]"
-              @click="pickingNewFlow = true"
-            >
-              <Icon name="lucide:plus" :size="13" />
-              Pick a new flow
-            </button>
-          </div>
+          <PracticeCard
+            @start="onStartSession"
+            @go-to-flows="activeNav = 'flows'"
+          />
         </template>
 
       </div>
@@ -215,8 +185,8 @@ async function logout() {
 }
 
 const navItems = [
-  { id: 'today',    label: 'Today',    icon: 'lucide:sun',         count: null },
-  { id: 'practice', label: 'Practice', icon: 'lucide:rotate-ccw',  count: null },
+  { id: 'today',    label: 'Daily Practice', icon: 'lucide:sun',         count: null },
+  { id: 'flows',    label: 'Flows',    icon: 'lucide:git-branch',  count: null },
   { id: 'skills',   label: 'Skills',   icon: 'lucide:layers',      count: null },
   { id: 'progress', label: 'Progress', icon: 'lucide:trending-up', count: null },
 ]
@@ -224,51 +194,128 @@ const activeNav = ref('today')
 
 import type { EssentialFlow } from '~/components/FlowPicker.vue'
 
-interface RecentFlow {
-  flow: EssentialFlow
-  progress: number  // questions answered (0–12)
-  startedAt: Date
-}
-
-const recentFlows = ref<RecentFlow[]>([])
 const activeFlow = ref<EssentialFlow | null>(null)
-const pickingNewFlow = ref(false)
+const activeSessionId = ref<number | null>(null)
+const activeInitialQuestion = ref(0)
+const selectedSessionId = ref<number | null>(null)
+const activeDailyGoal = ref(5)
+const dailyGoalReached = ref(false)
 
-const hasStartedFlows = computed(() => recentFlows.value.length > 0)
+// Sessions
+interface RecentSession {
+  id: number
+  flowId: number | null
+  flowName: string
+  predefinedKey: string | null
+  questionsAnswered: number
+  goalQuestions: number
+  difficulty: string
+  startedAt: string
+  lastActivityAt: string
+  completedAt: string | null
+}
 
-function onPickFlow(flow: EssentialFlow) {
-  pickingNewFlow.value = false
-  activeFlow.value = flow
-  if (!recentFlows.value.find(r => r.flow.id === flow.id)) {
-    recentFlows.value.unshift({ flow, progress: 0, startedAt: new Date() })
+const { data: sessionsData, refresh: refreshSessions } = await useFetch<RecentSession[]>('/api/sessions/recent')
+const recentSessions = computed(() => sessionsData.value ?? [])
+
+async function onStartSession({ flow, goal, difficulty }: {
+  flow: { id?: number; dbId?: number | null; name: string; predefinedKey?: string | null; key?: string }
+  goal: number
+  difficulty: string
+}) {
+  const flowDbId = ('id' in flow && typeof flow.id === 'number') ? flow.id : (flow.dbId ?? null)
+  const predefinedKey = flow.predefinedKey ?? flow.key ?? null
+  const flowKey = predefinedKey ?? 'system-design'
+
+  activeDailyGoal.value = goal
+  dailyGoalReached.value = false
+
+  // Create session record
+  const session = await $fetch<RecentSession>('/api/sessions', {
+    method: 'POST',
+    body: { flowId: flowDbId, flowName: flow.name, goalQuestions: goal, difficulty },
+  })
+  activeSessionId.value = session.id
+
+  // Map to EssentialFlow shape FlowSession expects
+  activeFlow.value = {
+    id: flowKey,
+    path: '',
+    title: flow.name,
+    description: '',
+    duration: '',
+    difficulty,
+    promptTypes: [],
   }
 }
 
-function onFlowExit(questionIndex: number) {
-  if (activeFlow.value) {
-    const recent = recentFlows.value.find(r => r.flow.id === activeFlow.value!.id)
-    if (recent) recent.progress = questionIndex
+async function onQuestionAnswered(count: number) {
+  await $fetch('/api/daily', { method: 'PATCH', body: { questionsAnswered: count } })
+  if (!dailyGoalReached.value && count >= activeDailyGoal.value) {
+    dailyGoalReached.value = true
+    await $fetch('/api/daily', { method: 'PATCH', body: { completedAt: new Date().toISOString() } })
+  }
+}
+
+async function onFlowExit(questionsAnswered: number) {
+  if (activeSessionId.value !== null) {
+    await $fetch(`/api/sessions/${activeSessionId.value}`, {
+      method: 'PATCH',
+      body: { questionsAnswered },
+    })
+    await refreshSessions()
   }
   activeFlow.value = null
+  activeSessionId.value = null
+  selectedSessionId.value = null
+  dailyGoalReached.value = false
+  if (!activeNav.value) activeNav.value = 'today'
 }
 
-function onFlowFinish() {
-  if (activeFlow.value) {
-    const recent = recentFlows.value.find(r => r.flow.id === activeFlow.value!.id)
-    if (recent) recent.progress = 12
+async function onFlowFinish() {
+  if (activeSessionId.value !== null) {
+    const session = recentSessions.value.find(s => s.id === activeSessionId.value)
+    await $fetch(`/api/sessions/${activeSessionId.value}`, {
+      method: 'PATCH',
+      body: { questionsAnswered: session?.goalQuestions ?? 0, completed: true },
+    })
+    await refreshSessions()
+  }
+  if (!dailyGoalReached.value) {
+    await $fetch('/api/daily', { method: 'PATCH', body: { completedAt: new Date().toISOString() } })
   }
   activeFlow.value = null
+  activeSessionId.value = null
+  selectedSessionId.value = null
+  dailyGoalReached.value = false
+  if (!activeNav.value) activeNav.value = 'today'
 }
 
-function resumeFlow(recent: RecentFlow) {
-  activeFlow.value = recent.flow
+function resumeSession(s: RecentSession) {
+  const flowKey = s.predefinedKey ?? 'system-design'
+  activeInitialQuestion.value = s.completedAt ? 0 : s.questionsAnswered
+  activeSessionId.value = s.id
+  selectedSessionId.value = s.id
+  activeFlow.value = {
+    id: flowKey,
+    path: '',
+    title: s.flowName,
+    description: '',
+    duration: '',
+    difficulty: s.difficulty,
+    promptTypes: [],
+  }
+  activeNav.value = ''
 }
 
-const STREAK = { current: 47, longest: 63, totalSolved: 612, week: [1, 1, 1, 1, 2, 0, 0] }
-const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60_000)
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  return days === 1 ? 'yesterday' : `${days}d ago`
+}
 
-
-const HEAT = Array.from({ length: 17 }, () =>
-  Array.from({ length: 7 }, () => Math.random() < 0.18 ? 0 : 1 + Math.floor(Math.random() * 3))
-)
 </script>

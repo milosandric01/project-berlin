@@ -75,12 +75,14 @@
 <script setup lang="ts">
 import type { EssentialFlow } from './FlowPicker.vue'
 
-const props = defineProps<{ flow: EssentialFlow }>()
-const emit = defineEmits<{ exit: [questionIndex: number]; finish: [] }>()
+const props = defineProps<{ flow: EssentialFlow; initialQuestion?: number }>()
+const emit = defineEmits<{ exit: [questionIndex: number]; finish: []; questionAnswered: [count: number] }>()
 
 const totalQuestions = 12
-const current = ref(0)
+const current = ref(props.initialQuestion ?? 0)
 const answers = ref<string[]>(Array(totalQuestions).fill(''))
+// tracks highest question index reached to avoid double-counting on back/forward
+const highWater = ref(props.initialQuestion ?? 0)
 
 interface Question {
   type: string
@@ -218,7 +220,16 @@ function back() {
 function next() {
   if (current.value < totalQuestions - 1) {
     current.value++
+    if (current.value > highWater.value) {
+      highWater.value = current.value
+      emit('questionAnswered', highWater.value)
+    }
   } else {
+    const finalCount = totalQuestions
+    if (finalCount > highWater.value) {
+      highWater.value = finalCount
+      emit('questionAnswered', highWater.value)
+    }
     emit('finish')
   }
 }
