@@ -31,7 +31,7 @@
           ]"
           @click="activeNav = n.id; selectedSessionId = null"
         >
-          <Icon :name="n.icon" :size="16" class="text-gray-600" />
+          <Icon :name="n.icon" :size="16" class="text-gray-900" />
           {{ n.label }}
           <span v-if="n.count != null" class="ml-auto font-mono text-[11px] text-gray-400">{{ n.count }}</span>
         </button>

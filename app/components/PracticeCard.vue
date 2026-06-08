@@ -8,14 +8,6 @@
       <div class="h-3 bg-gray-100 rounded w-1/2" />
     </div>
 
-    <!-- Cold start: no owned flows — show predefined carousel -->
-    <template v-else-if="isColdStart">
-      <div class="relative isolate">
-        <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
-        <FlowPicker @start="onColdStartPick" />
-      </div>
-    </template>
-
     <!-- State 1: pick a flow (+ mood form) -->
     <div v-else-if="currentState === 'pick'" class="relative isolate">
       <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
@@ -29,7 +21,7 @@
           </div>
           <span class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400">{{ dateLabel }}</span>
         </div> -->
-        <h2 class="font-sans text-[30px] font-medium leading-[1.25] tracking-[-0.015em] text-gray-900">
+        <h2 class="font-sans text-[27px] font-medium leading-[1.25] tracking-[-0.015em] text-gray-900">
           {{ completedToday ? "What's next?" : `Ready for today's practice${props.userName ? `, ${props.userName}` : ''}?` }}
         </h2>
       </div>
@@ -48,16 +40,40 @@
             <Icon name="lucide:arrow-left" :size="12" />
             Back
           </button>
-          <span class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400">{{ dateLabel }}</span>
         </div>
 
-        <h2 class="font-sans text-[22px] font-medium leading-[1.3] tracking-[-0.015em] text-gray-900 mb-6">
-          What are you up for today?
+        <h2 class="font-sans text-[22px] mb-6 font-medium leading-[1.3] tracking-[-0.015em] text-gray-900 mb-1">
+          We'll match a flow to your headspace
         </h2>
+        <!-- <p class="text-[13px] text-gray-500 leading-snug mb-6">
+          We'll match a flow to your headspace — no wrong answers.
+        </p> -->
+
+        <!-- Difficulty -->
+        <div class="mb-5">
+          <div class="text-xs text-gray-500 mb-2.5">Difficulty</div>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              v-for="e in energyOptions"
+              :key="e.id"
+              :class="[
+                'flex flex-col items-center justify-center gap-2 py-3.5 rounded-2xl border transition-all duration-[150ms] cursor-pointer font-[inherit]',
+                moodDiff === e.id
+                  ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
+                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+              ]"
+              @click="moodDiff = e.id as typeof moodDiff"
+            >
+              <Icon :name="e.icon" :size="20" :class="moodDiff === e.id ? 'text-[#FF6B35]' : 'text-gray-400'" />
+              <span class="text-[13px] font-medium leading-none">{{ e.label }}</span>
+              <span :class="['text-[11px] leading-none', moodDiff === e.id ? 'text-white/55' : 'text-gray-400']">{{ e.sublabel }}</span>
+            </button>
+          </div>
+        </div>
 
         <!-- Time -->
         <div class="mb-5">
-          <div class="text-xs text-gray-500 mb-2.5">How much time do you have?</div>
+          <div class="text-xs text-gray-500 mb-2.5">How much time feels right?</div>
           <div class="inline-flex items-center gap-0 p-1 border border-gray-200 rounded-full bg-gray-50">
             <button
               v-for="t in timeOptions"
@@ -76,40 +92,23 @@
           </div>
         </div>
 
-        <!-- Difficulty -->
-        <div class="mb-5">
-          <div class="text-xs text-gray-500 mb-2.5">How hard do you want to go?</div>
-          <div class="inline-flex items-center gap-0 p-1 border border-gray-200 rounded-full bg-gray-50">
-            <button
-              v-for="d in difficultyOptions"
-              :key="d.id"
-              :class="[
-                'inline-flex items-center justify-center h-[30px] px-4 rounded-full text-[13px] font-[450] border-none cursor-pointer font-[inherit] transition-all duration-[150ms]',
-                moodDiff === d.id
-                  ? 'bg-white text-gray-900 font-medium shadow-sm'
-                  : 'bg-transparent text-gray-500 hover:text-gray-700',
-              ]"
-              @click="moodDiff = d.id as typeof moodDiff"
-            >{{ d.label }}</button>
-          </div>
-        </div>
-
-        <!-- Focus -->
+        <!-- Category -->
         <div class="mb-6">
-          <div class="text-xs text-gray-500 mb-2.5">What do you want to focus on?</div>
-          <div class="flex flex-col gap-1.5">
+          <div class="text-xs text-gray-500 mb-2.5">I'm in the mood for…</div>
+          <div class="flex flex-wrap gap-2">
             <button
               v-for="f in focusOptions"
               :key="f.id"
               :class="[
-                'flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-xl border transition-all duration-[150ms] cursor-pointer font-[inherit]',
+                'inline-flex items-center gap-1.5 h-[30px] px-3.5 rounded-full border transition-all duration-[150ms] cursor-pointer font-[inherit] text-[13px]',
                 moodFocus === f.id
-                  ? 'border-gray-900 bg-gray-900 text-white'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                  ? 'border-gray-900 bg-gray-900 text-white font-medium shadow-sm'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
               ]"
               @click="moodFocus = f.id as typeof moodFocus"
             >
-              <span class="text-[13.5px] font-[450]">{{ f.label }}</span>
+              <Icon :name="f.icon" :size="14" />
+              {{ f.label }}
             </button>
           </div>
         </div>
@@ -142,7 +141,7 @@
             class="group relative w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gray-900 border border-gray-900 hover:bg-gray-800 transition-all duration-[150ms] cursor-pointer font-[inherit] text-left shadow-sm hover:shadow-md"
             @click="moodMode = true"
           >
-            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-none">
+            <div class="w-10 h-10 rounded-full bg-[#FF6B35] flex items-center justify-center flex-none">
               <Icon name="lucide:sparkles" :size="17" class="text-white" />
             </div>
             <div class="flex-1 min-w-0">
@@ -150,7 +149,7 @@
                 <span class="text-[15px] font-semibold text-white leading-snug">Match my mood</span>
                 <!-- <span class="font-mono text-[9px] tracking-[0.08em] uppercase text-white/60 border border-white/20 rounded-full px-1.5 py-0.5">Quick</span> -->
               </div>
-              <div class="text-[12.5px] text-white/60 mt-0.5">Answer 3 questions, we'll pick the flow</div>
+              <div class="text-[12.5px] text-white/60 mt-0.5">Tell us your vibe, we'll find the right flow</div>
             </div>
             <Icon name="lucide:arrow-right" :size="16" class="text-white/50 flex-none transition-transform duration-[150ms] group-hover:translate-x-0.5" />
           </button>
@@ -164,8 +163,8 @@
               <Icon name="lucide:layout-grid" :size="17" class="text-gray-700" />
             </div>
             <div class="flex-1 min-w-0">
-              <div class="text-[15px] font-semibold text-gray-900 leading-snug">Browse my flows</div>
-              <div class="text-[12.5px] text-gray-500 mt-0.5">Pick from your custom and platform flows</div>
+              <div class="text-[15px] font-semibold text-gray-900 leading-snug">Browse flows</div>
+              <div class="text-[12.5px] text-gray-500 mt-0.5">Pick from your custom or platform flows</div>
             </div>
             <Icon name="lucide:arrow-right" :size="16" class="text-gray-300 flex-none transition-transform duration-[150ms] group-hover:translate-x-0.5" />
           </button>
@@ -323,17 +322,8 @@ const emit = defineEmits<{
   goToFlows: []
 }>()
 
-import type { EssentialFlow } from '~/components/FlowPicker.vue'
-
 const { data: flowsData, pending, refresh } = await useFetch<{ customFlows: CustomFlow[]; platformFlows: PlatformFlow[] }>('/api/flows')
 const { data: daily, pending: dailyPending, refresh: refreshDaily } = await useFetch<DailyState>('/api/daily')
-
-const isColdStart = computed(() =>
-  !pending.value
-  && !dailyPending.value
-  && (flowsData.value?.customFlows.length ?? 0) === 0
-  && (flowsData.value?.platformFlows.every(f => f.dbId === null) ?? true),
-)
 
 const completedToday = computed(() => !!daily.value?.completedAt)
 
@@ -388,17 +378,29 @@ const timeOptions = [
   { id: 'deep',   label: 'Deep',   sublabel: '30m' },
 ] as const
 
-const focusOptions = [
-  { id: 'usual',     label: 'My usual flow' },
-  { id: 'neglected', label: "Something I haven't touched lately" },
-  { id: 'surprise',  label: 'Surprise me' },
+const energyOptions = [
+  { id: 'light',     label: 'Easy',   sublabel: 'Warm-up', icon: 'lucide:coffee' },
+  { id: 'practical', label: 'Medium', sublabel: 'Standard', icon: 'lucide:target' },
+  { id: 'deep',      label: 'Hard',   sublabel: 'Challenge', icon: 'lucide:flame' },
 ] as const
+
+const focusOptions = [
+  { id: 'fundamentals', label: 'Fundamentals',  icon: 'lucide:box' },
+  { id: 'frontend',     label: 'Frontend',      icon: 'lucide:layout' },
+  { id: 'backend',      label: 'Backend',       icon: 'lucide:server' },
+  { id: 'systems',      label: 'Systems',       icon: 'lucide:network' },
+  { id: 'devops',       label: 'DevOps',        icon: 'lucide:container' },
+  { id: 'security',     label: 'Security',      icon: 'lucide:shield' },
+  { id: 'quality',      label: 'Code Quality',  icon: 'lucide:check-circle' },
+  { id: 'surprise',     label: 'Surprise me',   icon: 'lucide:dices' },
+] as const
+
+type MoodFocus = typeof focusOptions[number]['id']
 
 type MoodTime = 'quick' | 'normal' | 'deep'
 type MoodDiff = 'light' | 'practical' | 'deep'
-type MoodFocus = 'usual' | 'neglected' | 'surprise'
 
-const moodTime = ref<MoodTime | null>(null)
+const moodTime = ref<MoodTime | null>('quick')
 const moodDiff = ref<MoodDiff | null>(null)
 const moodFocus = ref<MoodFocus | null>(null)
 const applyingMood = ref(false)
@@ -406,6 +408,17 @@ const applyingMood = ref(false)
 const moodCanStart = computed(() => moodTime.value !== null && moodDiff.value !== null && moodFocus.value !== null)
 
 const timeGoalMap: Record<MoodTime, number> = { quick: 3, normal: 5, deep: 10 }
+
+const focusCategoryMap: Record<string, string[]> = {
+  fundamentals: ['Fundamentals'],
+  frontend:     ['Frontend'],
+  backend:      ['Backend'],
+  systems:      ['Systems'],
+  devops:       ['Cloud & DevOps'],
+  security:     ['Security'],
+  quality:      ['Code Quality'],
+  surprise:     [],
+}
 
 async function applyMood() {
   if (!moodTime.value || !moodDiff.value || !moodFocus.value || !flowsData.value) return
@@ -415,28 +428,34 @@ async function applyMood() {
 
   const customFlows = flowsData.value.customFlows
   const platformFlows = flowsData.value.platformFlows
-  const ownedFlows: Array<CustomFlow | PlatformFlow> = [
-    ...customFlows,
-    ...platformFlows.filter(f => f.dbId !== null),
-  ]
+  const allFlows: Array<CustomFlow | PlatformFlow> = [...customFlows, ...platformFlows]
 
   let picked: CustomFlow | PlatformFlow | null = null
 
-  if (moodFocus.value === 'usual') {
-    const practiced = ownedFlows.filter(f => f.lastPracticedAt !== null)
-    picked = practiced.length > 0
-      ? practiced.sort((a, b) => new Date(b.lastPracticedAt!).getTime() - new Date(a.lastPracticedAt!).getTime())[0]
-      : ownedFlows[0] ?? platformFlows[0] ?? null
-  }
-  else if (moodFocus.value === 'neglected') {
-    const neverPracticed = ownedFlows.filter(f => f.lastPracticedAt === null)
-    picked = neverPracticed.length > 0
-      ? neverPracticed[0]
-      : [...ownedFlows].sort((a, b) => new Date(a.lastPracticedAt!).getTime() - new Date(b.lastPracticedAt!).getTime())[0] ?? null
+  const categories = focusCategoryMap[moodFocus.value] ?? []
+
+  if (categories.length > 0) {
+    // Filter flows whose skills match the selected category
+    const matching = allFlows.filter(f =>
+      f.skills.some(s => {
+        const slug = 'slug' in s ? s.slug : ''
+        return categories.some(cat => cat.toLowerCase() === slug) || categories.length > 0
+      }),
+    )
+    // For platform flows, match by skillSlugs
+    const platformMatching = platformFlows.filter(pf =>
+      pf.skillSlugs.some(slug => {
+        const label = slug.replace(/-/g, ' ').toLowerCase()
+        return categories.some(cat => cat.toLowerCase() === label || label.includes(cat.toLowerCase()))
+      }),
+    )
+    const candidates = [...matching, ...platformMatching]
+    const unique = [...new Map(candidates.map(f => [('key' in f ? f.key : f.id), f])).values()]
+    picked = unique.length > 0 ? unique[Math.floor(Math.random() * unique.length)] : allFlows[Math.floor(Math.random() * allFlows.length)] ?? null
   }
   else {
-    const all: Array<CustomFlow | PlatformFlow> = [...customFlows, ...platformFlows]
-    picked = all[Math.floor(Math.random() * all.length)] ?? null
+    // Surprise: random
+    picked = allFlows[Math.floor(Math.random() * allFlows.length)] ?? null
   }
 
   if (!picked) return
@@ -479,17 +498,6 @@ function startFlow() {
     goal: activeGoal.value,
     difficulty: activeDiff.value,
   })
-}
-
-// ─── Cold start ───────────────────────────────────────────────────────────────
-
-async function onColdStartPick(flow: EssentialFlow) {
-  const created = await $fetch<{ id: number }>('/api/flows', {
-    method: 'POST',
-    body: { name: flow.title, predefinedKey: flow.id },
-  })
-  await $fetch('/api/daily', { method: 'PATCH', body: { flowId: created.id } })
-  await Promise.all([refresh(), refreshDaily()])
 }
 
 // ─── Display helpers ──────────────────────────────────────────────────────────
