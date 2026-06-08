@@ -6,6 +6,8 @@ export const users = pgTable(
     id: serial('id').primaryKey(),
     email: text('email').notNull(),
     passwordHash: text('password_hash').notNull(),
+    firstName: text('first_name'),
+    lastName: text('last_name'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   t => ({

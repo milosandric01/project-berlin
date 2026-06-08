@@ -19,6 +19,21 @@
     <!-- State 1: pick a flow (+ mood form) -->
     <div v-else-if="currentState === 'pick'" class="relative isolate">
       <div class="absolute -inset-8 rounded-3xl blur-3xl -z-10 animate-glow" style="background: radial-gradient(circle, rgba(255, 107, 53, 0.35) 0%, rgba(255, 107, 53, 0.15) 50%, transparent 80%)" />
+
+      <!-- Header (outside the card) — flow list state only -->
+      <div v-if="!moodMode" class="px-1 mb-4">
+        <!-- <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-gray-900 flex-none" />
+            <span class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-500 font-medium">Daily Practice</span>
+          </div>
+          <span class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400">{{ dateLabel }}</span>
+        </div> -->
+        <h2 class="font-sans text-[30px] font-medium leading-[1.25] tracking-[-0.015em] text-gray-900">
+          {{ completedToday ? "What's next?" : `Ready for today's practice${props.userName ? `, ${props.userName}` : ''}?` }}
+        </h2>
+      </div>
+
       <div class="bg-white border-none rounded-3xl shadow-sm px-[26px] pt-6 pb-5">
 
       <!-- ── Mood form ───────────────────────────────────────────────────── -->
@@ -118,53 +133,44 @@
       <!-- ── Flow list ───────────────────────────────────────────────────── -->
       <template v-else>
 
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-5">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-gray-900 flex-none" />
-            <span class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-500 font-medium">Daily Practice</span>
-          </div>
-          <span class="font-mono text-[11px] tracking-[0.06em] uppercase text-gray-400">{{ dateLabel }}</span>
+        <!-- Two clear choices -->
+        <div class="flex flex-col gap-3">
+
+          <!-- Choice 1: mood — featured, only on first pick of the day -->
+          <button
+            v-if="!completedToday"
+            class="group relative w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-gray-900 border border-gray-900 hover:bg-gray-800 transition-all duration-[150ms] cursor-pointer font-[inherit] text-left shadow-sm hover:shadow-md"
+            @click="moodMode = true"
+          >
+            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-none">
+              <Icon name="lucide:sparkles" :size="17" class="text-white" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-[15px] font-semibold text-white leading-snug">Match my mood</span>
+                <!-- <span class="font-mono text-[9px] tracking-[0.08em] uppercase text-white/60 border border-white/20 rounded-full px-1.5 py-0.5">Quick</span> -->
+              </div>
+              <div class="text-[12.5px] text-white/60 mt-0.5">Answer 3 questions, we'll pick the flow</div>
+            </div>
+            <Icon name="lucide:arrow-right" :size="16" class="text-white/50 flex-none transition-transform duration-[150ms] group-hover:translate-x-0.5" />
+          </button>
+
+          <!-- Choice 2: browse existing flows -->
+          <button
+            class="group relative w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-25 transition-all duration-[150ms] cursor-pointer font-[inherit] text-left shadow-sm hover:shadow-md"
+            @click="emit('goToFlows')"
+          >
+            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-none">
+              <Icon name="lucide:layout-grid" :size="17" class="text-gray-700" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[15px] font-semibold text-gray-900 leading-snug">Browse my flows</div>
+              <div class="text-[12.5px] text-gray-500 mt-0.5">Pick from your custom and platform flows</div>
+            </div>
+            <Icon name="lucide:arrow-right" :size="16" class="text-gray-300 flex-none transition-transform duration-[150ms] group-hover:translate-x-0.5" />
+          </button>
+
         </div>
-
-        <h2 class="font-sans text-[22px] font-medium leading-[1.3] tracking-[-0.015em] text-gray-900 mb-5">
-          {{ completedToday ? "What's next?" : 'What are you working on today?' }}
-        </h2>
-
-        <!-- Mood CTA — only on first pick of the day, not "pick next" -->
-        <button
-          v-if="!completedToday"
-          class="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-sand-100 border border-sand-300 hover:bg-sand-200 hover:border-sand-400 transition-all duration-[150ms] cursor-pointer font-[inherit] text-left mb-5"
-          @click="moodMode = true"
-        >
-          <div class="w-8 h-8 rounded-full bg-sand-300 flex items-center justify-center flex-none">
-            <Icon name="lucide:sparkles" :size="14" class="text-gray-700" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-[13.5px] font-medium text-gray-900 leading-snug">Not sure where to start?</div>
-            <div class="text-[12px] text-gray-500 mt-0.5">Answer a few quick questions and we'll pick for you</div>
-          </div>
-          <Icon name="lucide:arrow-right" :size="14" class="text-gray-400 flex-none" />
-        </button>
-
-        <!-- Divider -->
-        <div v-if="!completedToday" class="flex items-center gap-3 mb-4">
-          <div class="flex-1 h-px bg-gray-100" />
-          <span class="font-mono text-[10px] tracking-[0.06em] uppercase text-gray-400">or pick directly</span>
-          <div class="flex-1 h-px bg-gray-100" />
-        </div>
-
-        <!-- Single entry point to all flows -->
-        <button
-          class="flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl border border-transparent bg-transparent hover:bg-gray-50 hover:border-gray-100 transition-all duration-[120ms] cursor-pointer font-[inherit]"
-          @click="emit('goToFlows')"
-        >
-          <span class="flex-1 min-w-0">
-            <span class="block text-[14px] font-medium text-gray-900 leading-snug">Browse flows</span>
-            <span class="block text-[11px] text-gray-400 mt-0.5">Your custom flows and platform flows</span>
-          </span>
-          <Icon name="lucide:arrow-right" :size="14" class="text-gray-300 flex-none" />
-        </button>
 
       </template>
 
@@ -309,6 +315,8 @@ interface DailyState {
   questionsAnswered: number
   completedAt: string | null
 }
+
+const props = defineProps<{ userName?: string }>()
 
 const emit = defineEmits<{
   start: [{ flow: { id: number; name: string; predefinedKey: string | null }; goal: number; difficulty: string }]
@@ -504,4 +512,5 @@ const skillPath = computed(() => {
 const dateLabel = new Date().toLocaleDateString('en-US', {
   weekday: 'long', month: 'long', day: 'numeric',
 }).toUpperCase()
+
 </script>

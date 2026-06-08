@@ -6,8 +6,7 @@ import postgres from 'postgres'
 import { users, skills } from './schema'
 
 const SEED_USERS = [
-  { email: 'kermit@hydracart.io', password: 'kermit' },
-  { email: 'milosa942@gmail.com', password: 'password' },
+  { email: 'kermit@flowiz.dev', password: 'kermit', firstName: 'Kermit', lastName: 'Muppet' },
 ]
 
 const SEED_SKILLS: { name: string; category: string }[] = [
@@ -102,7 +101,7 @@ async function main() {
       continue
     }
     const passwordHash = await bcrypt.hash(u.password, 10)
-    await db.insert(users).values({ email, passwordHash })
+    await db.insert(users).values({ email, passwordHash, firstName: u.firstName, lastName: u.lastName })
     console.log(`  ✓ created ${email}`)
   }
 

@@ -112,6 +112,7 @@
         <!-- Today: active flow card (PRD Practice page) -->
         <template v-else>
           <PracticeCard
+            :user-name="userDisplayName"
             @start="onStartSession"
             @go-to-flows="activeNav = 'flows'"
           />
@@ -125,10 +126,11 @@
 <script setup lang="ts">
 definePageMeta({ layout: false, middleware: 'auth' })
 
-const { data: authData } = await useFetch<{ user: { email: string } | null }>('/api/auth/user')
+const { data: authData } = await useFetch<{ user: { email: string; firstName: string | null; lastName: string | null } | null }>('/api/auth/user')
 const user = computed(() => authData.value?.user)
 
 const userDisplayName = computed(() => {
+  if (user.value?.firstName) return user.value.firstName
   const email = user.value?.email ?? ''
   return email.split('@')[0] || email
 })
