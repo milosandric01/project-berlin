@@ -33,10 +33,6 @@
           {{ loading ? 'Creating account...' : 'Register' }}
         </button>
       </form>
-      <p class="mt-4 text-xs text-center text-gray-500">
-        Already have an account?
-        <NuxtLink to="/login" class="text-gray-900 font-semibold">Login</NuxtLink>
-      </p>
     </div>
   </div>
 </template>

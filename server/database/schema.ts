@@ -113,3 +113,18 @@ export const dailyStates = pgTable(
 
 export type DailyState = typeof dailyStates.$inferSelect
 export type NewDailyState = typeof dailyStates.$inferInsert
+
+export const waitlist = pgTable(
+  'waitlist',
+  {
+    id: serial('id').primaryKey(),
+    email: text('email').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  t => ({
+    emailIdx: uniqueIndex('waitlist_email_idx').on(t.email),
+  }),
+)
+
+export type WaitlistEntry = typeof waitlist.$inferSelect
+export type NewWaitlistEntry = typeof waitlist.$inferInsert

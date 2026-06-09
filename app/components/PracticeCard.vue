@@ -73,15 +73,15 @@
 
         <!-- Time -->
         <div class="mb-5">
-          <div class="text-xs text-gray-500 mb-2.5">How much time feels right?</div>
+          <div class="text-xs text-gray-500 mb-2.5">Session length</div>
           <div class="inline-flex items-center gap-0 p-1 border border-gray-200 rounded-full bg-gray-50">
             <button
               v-for="t in timeOptions"
               :key="t.id"
               :class="[
-                'inline-flex items-center justify-center h-[30px] px-4 rounded-full border-none cursor-pointer font-[inherit] transition-all duration-[150ms]',
+                'inline-flex items-center justify-center h-[30px] px-4 rounded-full border-none cursor-pointer font-[inherit] font-[450] transition-all duration-[150ms]',
                 moodTime === t.id
-                  ? 'bg-white text-gray-900 font-medium shadow-sm'
+                  ? 'bg-white text-gray-900 shadow-sm'
                   : 'bg-transparent text-gray-500 hover:text-gray-700',
               ]"
               @click="moodTime = t.id as typeof moodTime"
@@ -94,15 +94,15 @@
 
         <!-- Category -->
         <div class="mb-6">
-          <div class="text-xs text-gray-500 mb-2.5">I'm in the mood for…</div>
+          <div class="text-xs text-gray-500 mb-2.5">Topic area</div>
           <div class="flex flex-wrap gap-2">
             <button
               v-for="f in focusOptions"
               :key="f.id"
               :class="[
-                'inline-flex items-center gap-1.5 h-[30px] px-3.5 rounded-full border transition-all duration-[150ms] cursor-pointer font-[inherit] text-[13px]',
+                'inline-flex items-center gap-1.5 h-[30px] px-3.5 rounded-full border transition-all duration-[150ms] cursor-pointer font-[inherit] text-[13px] font-[450]',
                 moodFocus === f.id
-                  ? 'border-gray-900 bg-gray-900 text-white font-medium shadow-sm'
+                  ? 'border-gray-900 bg-gray-900 text-white shadow-sm'
                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50',
               ]"
               @click="moodFocus = f.id as typeof moodFocus"
@@ -282,9 +282,9 @@
         <div class="flex items-center justify-between pt-4">
           <button
             class="inline-flex items-center gap-[7px] text-[13px] text-gray-500 bg-none border-none cursor-pointer font-[inherit] p-0 hover:text-gray-900 transition-colors duration-[100ms]"
-            @click="emit('goToFlows')"
+            @click="resetToPickState"
           >
-            <Icon name="lucide:shuffle" :size="14" class="text-gray-400" />
+            <Icon name="lucide:arrow-left" :size="14" class="text-gray-400" />
             Pick a different flow
           </button>
           <HlButton variant="primary" size="md" @click="startFlow">
@@ -498,6 +498,11 @@ function startFlow() {
     goal: activeGoal.value,
     difficulty: activeDiff.value,
   })
+}
+
+async function resetToPickState() {
+  await $fetch('/api/daily', { method: 'PATCH', body: { flowId: null } })
+  await refreshDaily()
 }
 
 // ─── Display helpers ──────────────────────────────────────────────────────────
