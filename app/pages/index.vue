@@ -1,5 +1,5 @@
 <template>
-  <div style="font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;color:#1C1714;overflow-x:hidden;">
+  <div style="font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;color:#1C1C2E;overflow-x:hidden;">
 
     <!-- ===================== TOP — LIGHT · WHAT IT IS ===================== -->
     <section class="flz-top" style="position:relative;padding:0 24px 96px;overflow:hidden;">
@@ -23,10 +23,10 @@
           Your engineering sparring partner for staying <span style="background:linear-gradient(120deg,#3A3DC4,#6D6FE8);-webkit-background-clip:text;background-clip:text;color:transparent;">technically sharp.</span>
         </h1>
         <div style="max-width:480px;margin:0 auto 36px;text-align:left;padding:20px 24px;border-left:2px solid #3A3DC4;background:rgba(58,61,196,0.04);border-radius:0 10px 10px 0;">
-<p style="font-size:15px;line-height:1.7;color:#6E655C;margin:0 0 12px;font-style:italic;">
+<p style="font-size:15px;line-height:1.7;color:#5A5A78;margin:0 0 12px;font-style:italic;">
             After more than a decade in software engineering, I realized that staying technically sharp is a continuous challenge. There is always a new technology to explore, a concept to revisit, or a skill to strengthen. I built Flowiz to give engineers a practical way to learn, practice, and keep growing through focused daily sessions and real engineering challenges.
           </p>
-          <span style="font-size:13px;font-weight:600;color:#9A8E83;">Milos, Founder</span>
+          <span style="font-size:13px;font-weight:600;color:#8888AA;">Milos, Founder</span>
         </div>
 
         <div id="waitlist" style="scroll-margin-top:80px;">
@@ -37,15 +37,15 @@
             </button>
           </form>
 
-          <div v-else style="display:inline-flex;align-items:center;gap:11px;padding:16px 22px;background:#fff;border:1px solid #E2D9CB;border-radius:12px;">
+          <div v-else style="display:inline-flex;align-items:center;gap:11px;padding:16px 22px;background:#fff;border:1px solid #DDE0F5;border-radius:12px;">
             <span style="display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#3A3DC4,#6D6FE8);flex-shrink:0;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span style="font-weight:600;font-size:15px;color:#1C1714;">{{ alreadyJoined ? "You're already on the list." : "You're on the list. We'll reach out before launch." }}</span>
+            <span style="font-weight:600;font-size:15px;color:#1C1C2E;">{{ alreadyJoined ? "You're already on the list." : "You're on the list. We'll reach out before launch." }}</span>
           </div>
 
           <p v-if="error" style="margin-top:10px;font-size:13px;color:#c63f3c;">{{ error }}</p>
-          <p style="font-size:13px;color:#A39686;margin:16px 0 0;">No spam. Just a heads-up when your daily practice is ready.</p>
+          <p style="font-size:13px;color:#9090B0;margin:16px 0 0;">No spam. Just a heads-up when your daily practice is ready.</p>
         </div>
       </div>
     </section>
@@ -81,7 +81,7 @@ async function submit() {
 
 <style scoped>
 .flz-top {
-  background: radial-gradient(120% 120% at 50% -12%, #FFF1E2 0%, #FBF7F0 52%);
+  background: radial-gradient(120% 120% at 50% -12%, #EAEBFF 0%, #ffffff 52%);
 }
 
 .flz-input-light {
@@ -91,9 +91,9 @@ async function submit() {
   padding: 0 18px;
   font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   font-size: 16px;
-  color: #1C1714;
+  color: #1C1C2E;
   background: #fff;
-  border: 1px solid #E2D9CB;
+  border: 1px solid #DDE0F5;
   border-radius: 12px;
   outline: none;
   transition: border-color .18s, box-shadow .18s;
