@@ -54,6 +54,18 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+  title: 'Flowiz — Technical interview prep you\'ll actually want to do',
+  description: 'Flowiz turns preparation into small daily practice sessions, so software engineers can stay ready without the last-minute panic.',
+  ogTitle: 'Flowiz — Technical interview prep you\'ll actually want to do',
+  ogDescription: 'Flowiz turns preparation into small daily practice sessions, so software engineers can stay ready without the last-minute panic.',
+  ogUrl: 'https://flowiz.dev',
+  ogType: 'website',
+  ogSiteName: 'Flowiz',
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'Flowiz — Technical interview prep you\'ll actually want to do',
+  twitterDescription: 'Flowiz turns preparation into small daily practice sessions, so software engineers can stay ready without the last-minute panic.',
+})
 
 const email = ref('')
 const loading = ref(false)
