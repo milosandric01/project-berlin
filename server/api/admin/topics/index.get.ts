@@ -59,13 +59,16 @@ export default defineEventHandler(async (event) => {
 
   const queueMap = new Map(queueRows.map(r => [r.slug, r]))
 
+  // If queue is empty, treat all topics as published (matches loadTopics fallback)
+  const fallbackMode = queueRows.length === 0
+
   // Merge file data with queue state
-  const result = allTopics.map((t) => {
+  const result = allTopics.map((t, idx) => {
     const q = queueMap.get(t.slug)
     return {
       ...t,
-      published: q?.published ?? false,
-      position: q?.position ?? null,
+      published: fallbackMode ? true : (q?.published ?? false),
+      position: fallbackMode ? idx + 1 : (q?.position ?? null),
     }
   })
 

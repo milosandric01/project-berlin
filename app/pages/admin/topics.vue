@@ -231,11 +231,11 @@ interface TopicItem {
 const loading = ref(true)
 const error = ref<string | null>(null)
 const topics = ref<TopicItem[]>([])
+const publishedTopics = ref<TopicItem[]>([])
 const orderDirty = ref(false)
 const saving = ref(false)
 const expanded = reactive(new Set<string>())
 
-const publishedTopics = computed(() => topics.value.filter(t => t.published))
 const draftTopics = computed(() => topics.value.filter(t => !t.published))
 
 async function fetchTopics() {
@@ -244,6 +244,7 @@ async function fetchTopics() {
   try {
     const res = await $fetch<{ topics: TopicItem[] }>('/api/admin/topics')
     topics.value = res.topics
+    publishedTopics.value = res.topics.filter(t => t.published)
   }
   catch (e: any) {
     error.value = e?.data?.message || 'Failed to load topics'
@@ -276,8 +277,8 @@ function moveUp(idx: number) {
   if (idx === 0) return
   const arr = publishedTopics.value
   const temp = arr[idx]
-  arr[idx] = arr[idx - 1]
-  arr[idx - 1] = temp
+  arr.splice(idx, 1)
+  arr.splice(idx - 1, 0, temp)
   orderDirty.value = true
 }
 
@@ -285,8 +286,8 @@ function moveDown(idx: number) {
   const arr = publishedTopics.value
   if (idx >= arr.length - 1) return
   const temp = arr[idx]
-  arr[idx] = arr[idx + 1]
-  arr[idx + 1] = temp
+  arr.splice(idx, 1)
+  arr.splice(idx + 1, 0, temp)
   orderDirty.value = true
 }
 

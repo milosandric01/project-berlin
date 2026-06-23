@@ -6,7 +6,7 @@ import postgres from 'postgres'
 import { users, skills, topicProgress } from './schema'
 
 const SEED_USERS = [
-  { email: 'kermit@flowiz.dev', password: 'kermit', firstName: 'Kermit', lastName: 'Muppet' },
+  { email: 'kermit@flowiz.dev', password: 'kermit', firstName: 'Kermit', lastName: 'Muppet', isAdmin: true },
 ]
 
 const SEED_TOPIC_PROGRESS = [
@@ -104,11 +104,15 @@ async function main() {
     const email = u.email.toLowerCase()
     const existing = await db.select().from(users).where(eq(users.email, email)).limit(1)
     if (existing.length > 0) {
+      // Update isAdmin flag if needed
+      if (u.isAdmin) {
+        await db.update(users).set({ isAdmin: true }).where(eq(users.email, email))
+      }
       console.log(`  • skip ${email} (exists)`)
       continue
     }
     const passwordHash = await bcrypt.hash(u.password, 10)
-    await db.insert(users).values({ email, passwordHash, firstName: u.firstName, lastName: u.lastName })
+    await db.insert(users).values({ email, passwordHash, firstName: u.firstName, lastName: u.lastName, isAdmin: u.isAdmin ?? false })
     console.log(`  ✓ created ${email}`)
   }
 

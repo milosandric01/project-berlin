@@ -1,70 +1,104 @@
 <template>
-  <div style="font-family:'Hanken Grotesk',ui-sans-serif,system-ui,sans-serif;color:#1C1C2E;overflow-x:hidden;">
+  <div class="min-h-screen bg-sand-50 text-gray-900 font-sans">
 
-    <!-- ===================== TOP — LIGHT · WHAT IT IS ===================== -->
-    <section class="flz-top" style="position:relative;padding:0 24px 96px;overflow:hidden;">
-      <div style="position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:840px;height:620px;border-radius:50%;background:radial-gradient(closest-side, rgba(58,61,196,0.15), rgba(58,61,196,0) 70%);animation:flz-glow 8s ease-in-out infinite;pointer-events:none;"></div>
+    <!-- Nav -->
+    <nav class="max-w-3xl mx-auto flex items-center justify-between px-6 py-6">
+      <div class="flex items-center gap-1">
+        <img src="/logo.svg" alt="flowiz" width="28" height="28" style="image-rendering: pixelated;" />
+        <span class="text-xl font-semibold tracking-tight">Flowiz</span>
+      </div>
+      <NuxtLink to="/login" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+        Sign in
+      </NuxtLink>
+    </nav>
 
-      <!-- nav -->
-      <nav style="position:relative;z-index:5;max-width:1080px;margin:0 auto;display:flex;align-items:center;padding:26px 0;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;border-radius:10px;background:linear-gradient(150deg,#3A3DC4,#6D6FE8);box-shadow:0 6px 16px rgba(58,61,196,0.35);">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
-              <path d="M4.5 12 q 3.75 -4.5 7.5 0 t 7.5 0" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-            </svg>
+    <!-- Hero -->
+    <section class="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
+      <h1 class="text-[clamp(28px,4vw,44px)] font-bold leading-[1.1] tracking-tight text-gray-900 mb-5 max-w-[600px] mx-auto">
+        Daily practice for new era software engineers
+      </h1>
+
+      <p class="text-[15px] text-gray-500 leading-relaxed max-w-[480px] mx-auto mb-10">
+        One focused topic per day. Read, answer, build your streak. Flowiz helps engineers grow consistently — without the noise.
+      </p>
+
+      <!-- Waitlist -->
+      <div id="waitlist" class="scroll-mt-20">
+        <form v-if="!joined" class="flex gap-2.5 justify-center flex-wrap max-w-[440px] mx-auto" @submit.prevent="submit">
+          <input
+            v-model="email"
+            type="email"
+            placeholder="you@work.com"
+            required
+            class="flex-1 min-w-[220px] h-11 px-4 text-sm bg-white border border-gray-200 rounded-xl outline-none transition-all placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200"
+          />
+          <button
+            type="submit"
+            :disabled="loading"
+            class="h-11 px-5 text-sm font-semibold text-white bg-gray-900 rounded-xl border-none cursor-pointer transition-all hover:bg-gray-800 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            {{ loading ? 'Joining…' : 'Join the waitlist' }}
+          </button>
+        </form>
+
+        <div v-else class="inline-flex items-center gap-2.5 px-5 py-3 bg-white border border-gray-200 rounded-xl">
+          <span class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-none">
+            <Icon name="lucide:check" :size="14" class="text-emerald-600" />
           </span>
-          <span style="font-family:'Libre Franklin',system-ui,-apple-system,sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.02em;">Flowiz</span>
-        </div>
-      </nav>
-
-      <!-- hero -->
-      <div style="position:relative;z-index:5;max-width:720px;margin:0 auto;text-align:center;padding-top:64px;">
-        <h1 style="font-family:'Libre Franklin',system-ui,-apple-system,sans-serif;font-weight:700;font-size:clamp(32px,4.5vw,56px);line-height:1.06;letter-spacing:-0.03em;margin:0 0 20px;">
-          Your engineering sparring partner for staying <span style="background:linear-gradient(120deg,#3A3DC4,#6D6FE8);-webkit-background-clip:text;background-clip:text;color:transparent;">technically sharp.</span>
-        </h1>
-        <div style="max-width:480px;margin:0 auto 36px;text-align:left;padding:20px 24px;border-left:2px solid #3A3DC4;background:rgba(58,61,196,0.04);border-radius:0 10px 10px 0;">
-<p style="font-size:15px;line-height:1.7;color:#5A5A78;margin:0 0 12px;font-style:italic;">
-            After more than a decade in software engineering, I realized that staying technically sharp is a continuous challenge. There is always a new technology to explore, a concept to revisit, or a skill to strengthen. I built Flowiz to give engineers a practical way to learn, practice, and keep growing through focused daily sessions and real engineering challenges.
-          </p>
-          <span style="font-size:13px;font-weight:600;color:#8888AA;">Milos, Founder</span>
+          <span class="text-sm font-medium text-gray-900">{{ alreadyJoined ? "You're already on the list." : "You're on the list. We'll reach out before launch." }}</span>
         </div>
 
-        <div id="waitlist" style="scroll-margin-top:80px;">
-          <form v-if="!joined" @submit.prevent="submit" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:480px;margin:0 auto;">
-            <input v-model="email" type="email" placeholder="you@work.com" required class="flz-input-light" />
-            <button type="submit" :disabled="loading" class="flz-btn">
-              {{ loading ? 'Joining…' : 'Join the waitlist' }}
-            </button>
-          </form>
+        <p v-if="error" class="mt-2.5 text-xs text-red-600">{{ error }}</p>
+        <p class="text-xs text-gray-400 mt-4">No spam. Just a heads-up when your daily practice is ready.</p>
+      </div>
+    </section>
 
-          <div v-else style="display:inline-flex;align-items:center;gap:11px;padding:16px 22px;background:#fff;border:1px solid #DDE0F5;border-radius:12px;">
-            <span style="display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#3A3DC4,#6D6FE8);flex-shrink:0;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <span style="font-weight:600;font-size:15px;color:#1C1C2E;">{{ alreadyJoined ? "You're already on the list." : "You're on the list. We'll reach out before launch." }}</span>
+    <!-- How it works -->
+    <section class="max-w-3xl mx-auto px-6 pb-24">
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl border border-gray-100 px-5 py-5">
+          <div class="w-8 h-8 rounded-lg bg-sand-200 flex items-center justify-center mb-3">
+            <Icon name="lucide:book-open" :size="16" class="text-gray-600" />
           </div>
-
-          <p v-if="error" style="margin-top:10px;font-size:13px;color:#c63f3c;">{{ error }}</p>
-          <p style="font-size:13px;color:#9090B0;margin:16px 0 0;">No spam. Just a heads-up when your daily practice is ready.</p>
+          <h3 class="text-[14px] font-semibold text-gray-900 mb-1">Read</h3>
+          <p class="text-[13px] text-gray-500 leading-relaxed">A short, focused article on one engineering concept. Takes 2–3 minutes.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 px-5 py-5">
+          <div class="w-8 h-8 rounded-lg bg-sand-200 flex items-center justify-center mb-3">
+            <Icon name="lucide:check-circle" :size="16" class="text-gray-600" />
+          </div>
+          <h3 class="text-[14px] font-semibold text-gray-900 mb-1">Answer</h3>
+          <p class="text-[13px] text-gray-500 leading-relaxed">Test your understanding with targeted questions. Get immediate feedback.</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 px-5 py-5">
+          <div class="w-8 h-8 rounded-lg bg-sand-200 flex items-center justify-center mb-3">
+            <Icon name="lucide:flame" :size="16" class="text-gray-600" />
+          </div>
+          <h3 class="text-[14px] font-semibold text-gray-900 mb-1">Streak</h3>
+          <p class="text-[13px] text-gray-500 leading-relaxed">Build consistency day by day. Small effort compounds into real depth.</p>
         </div>
       </div>
     </section>
 
+    <!-- Footer -->
+    <footer class="max-w-3xl mx-auto px-6 pb-8 text-center">
+      <p class="text-xs text-gray-400">&copy; {{ new Date().getFullYear() }} Flowiz. Built for engineers who want to keep growing.</p>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Flowiz — Technical interview prep you\'ll actually want to do',
-  description: 'Flowiz turns preparation into small daily practice sessions, so software engineers can stay ready without the last-minute panic.',
-  ogTitle: 'Flowiz — Technical interview prep you\'ll actually want to do',
-  ogDescription: 'Flowiz turns preparation into small daily practice sessions, so software engineers can stay ready without the last-minute panic.',
+  title: 'Flowiz — Daily practice for new-era software engineers',
+  description: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers stay technically sharp without the noise.',
+  ogTitle: 'Flowiz — Daily practice for new-era software engineers',
+  ogDescription: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers stay technically sharp without the noise.',
   ogUrl: 'https://flowiz.dev',
   ogType: 'website',
   ogSiteName: 'Flowiz',
   twitterCard: 'summary_large_image',
-  twitterTitle: 'Flowiz — Technical interview prep you\'ll actually want to do',
-  twitterDescription: 'Flowiz turns preparation into small daily practice sessions, so software engineers can stay ready without the last-minute panic.',
+  twitterTitle: 'Flowiz — Daily practice for new-era software engineers',
+  twitterDescription: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers stay technically sharp without the noise.',
 })
 
 const email = ref('')
@@ -90,49 +124,3 @@ async function submit() {
   }
 }
 </script>
-
-<style scoped>
-.flz-top {
-  background: radial-gradient(120% 120% at 50% -12%, #EAEBFF 0%, #ffffff 52%);
-}
-
-.flz-input-light {
-  flex: 1;
-  min-width: 240px;
-  height: 54px;
-  padding: 0 18px;
-  font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-  font-size: 16px;
-  color: #1C1C2E;
-  background: #fff;
-  border: 1px solid #DDE0F5;
-  border-radius: 12px;
-  outline: none;
-  transition: border-color .18s, box-shadow .18s;
-}
-.flz-input-light::placeholder { color: #A39686; }
-.flz-input-light:focus {
-  border-color: #3A3DC4;
-  box-shadow: 0 0 0 3px rgba(58,61,196,0.22);
-}
-
-
-.flz-btn {
-  height: 54px;
-  padding: 0 26px;
-  font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  color: #fff;
-  background: linear-gradient(135deg, #3A3DC4, #6D6FE8);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 8px 20px rgba(58,61,196,0.32);
-  transition: transform .15s, opacity .15s;
-}
-.flz-btn:hover { transform: translateY(-2px); }
-.flz-btn:active { transform: translateY(0) scale(.99); }
-.flz-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-</style>
