@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- Champion: horned helmet - red/crimson tones -->
+  <!-- Left horn -->
+  <rect x="2" y="0" width="1" height="1" fill="#fca5a5"/>
+  <rect x="3" y="1" width="1" height="1" fill="#991b1b"/>
+  <rect x="3" y="2" width="1" height="1" fill="#b91c1c"/>
+  <rect x="4" y="3" width="1" height="1" fill="#dc2626"/>
+  <rect x="4" y="4" width="1" height="1" fill="#dc2626"/>
+  <!-- Right horn -->
+  <rect x="13" y="0" width="1" height="1" fill="#fca5a5"/>
+  <rect x="12" y="1" width="1" height="1" fill="#991b1b"/>
+  <rect x="12" y="2" width="1" height="1" fill="#b91c1c"/>
+  <rect x="11" y="3" width="1" height="1" fill="#dc2626"/>
+  <rect x="11" y="4" width="1" height="1" fill="#dc2626"/>
+  <!-- Helmet top -->
+  <rect x="5" y="3" width="6" height="1" fill="#7f1d1d"/>
+  <rect x="5" y="4" width="6" height="1" fill="#991b1b"/>
+  <!-- Helmet body -->
+  <rect x="4" y="5" width="8" height="1" fill="#b91c1c"/>
+  <rect x="4" y="6" width="8" height="1" fill="#dc2626"/>
+  <rect x="4" y="7" width="8" height="1" fill="#dc2626"/>
+  <rect x="4" y="8" width="8" height="1" fill="#b91c1c"/>
+  <rect x="4" y="9" width="8" height="1" fill="#991b1b"/>
+  <rect x="5" y="10" width="6" height="1" fill="#7f1d1d"/>
+  <!-- Visor slit -->
+  <rect x="5" y="7" width="2" height="1" fill="#1f2937"/>
+  <rect x="9" y="7" width="2" height="1" fill="#1f2937"/>
+  <!-- Nose guard -->
+  <rect x="7" y="6" width="2" height="3" fill="#991b1b"/>
+  <rect x="7" y="6" width="2" height="1" fill="#7f1d1d"/>
+  <!-- Brow ridge -->
+  <rect x="5" y="5" width="6" height="1" fill="#fbbf24"/>
+  <!-- Chin guard -->
+  <rect x="5" y="11" width="6" height="1" fill="#7f1d1d"/>
+  <rect x="6" y="12" width="4" height="1" fill="#991b1b"/>
+  <!-- Metal highlights -->
+  <rect x="6" y="4" width="1" height="1" fill="#ef4444"/>
+  <rect x="9" y="4" width="1" height="1" fill="#ef4444"/>
+</svg>

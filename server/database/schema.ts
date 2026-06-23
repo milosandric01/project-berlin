@@ -128,3 +128,28 @@ export const waitlist = pgTable(
 
 export type WaitlistEntry = typeof waitlist.$inferSelect
 export type NewWaitlistEntry = typeof waitlist.$inferInsert
+
+// Per-user progress through the daily topic queue.
+// Lessons themselves live in markdown files (server/content/topics); this table
+// only stores how far each user has progressed and how they did.
+export const topicProgress = pgTable(
+  'topic_progress',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    topicSlug: text('topic_slug').notNull(),
+    articleRead: boolean('article_read').notNull().default(false),
+    questionsCorrect: integer('questions_correct').notNull().default(0),
+    questionsTotal: integer('questions_total').notNull().default(0),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  t => ({
+    userTopicIdx: uniqueIndex('topic_progress_user_topic_idx').on(t.userId, t.topicSlug),
+    userIdx: index('topic_progress_user_idx').on(t.userId),
+  }),
+)
+
+export type TopicProgress = typeof topicProgress.$inferSelect
+export type NewTopicProgress = typeof topicProgress.$inferInsert

@@ -50,6 +50,13 @@
       "when": 1781012811576,
       "tag": "0006_mature_valkyrie",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781957946872,
+      "tag": "0007_funny_the_stranger",
+      "breakpoints": true
     }
   ]
 }

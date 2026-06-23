@@ -3,10 +3,17 @@ import bcrypt from 'bcryptjs'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
-import { users, skills } from './schema'
+import { users, skills, topicProgress } from './schema'
 
 const SEED_USERS = [
   { email: 'kermit@flowiz.dev', password: 'kermit', firstName: 'Kermit', lastName: 'Muppet' },
+]
+
+const SEED_TOPIC_PROGRESS = [
+  { topicSlug: 'dns-basics', questionsCorrect: 3, questionsTotal: 3, daysAgo: 4 },
+  { topicSlug: 'http-status-codes', questionsCorrect: 2, questionsTotal: 3, daysAgo: 3 },
+  { topicSlug: 'tcp-vs-udp', questionsCorrect: 3, questionsTotal: 3, daysAgo: 2 },
+  { topicSlug: 'caching-basics', questionsCorrect: 1, questionsTotal: 3, daysAgo: 1 },
 ]
 
 const SEED_SKILLS: { name: string; category: string }[] = [
@@ -89,7 +96,7 @@ function toSlug(name: string): string {
 async function main() {
   const url = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/berlin'
   const client = postgres(url, { max: 1 })
-  const db = drizzle(client, { schema: { users, skills } })
+  const db = drizzle(client, { schema: { users, skills, topicProgress } })
 
   // Users
   console.log('\nUsers:')
@@ -120,6 +127,38 @@ async function main() {
     created++
   }
   console.log(`  ✓ ${created} created, ${skipped} skipped`)
+
+  // Topic Progress (for timeline demo)
+  console.log('\nTopic progress:')
+  const seedUser = await db.select().from(users).where(eq(users.email, 'kermit@flowiz.dev')).limit(1)
+  if (seedUser.length > 0) {
+    const userId = seedUser[0].id
+    let tpCreated = 0
+    let tpSkipped = 0
+    for (const tp of SEED_TOPIC_PROGRESS) {
+      const existing = await db
+        .select()
+        .from(topicProgress)
+        .where(eq(topicProgress.userId, userId))
+        .limit(100)
+      const already = existing.find(r => r.topicSlug === tp.topicSlug)
+      if (already) {
+        tpSkipped++
+        continue
+      }
+      const completedAt = new Date(Date.now() - tp.daysAgo * 86400000)
+      await db.insert(topicProgress).values({
+        userId,
+        topicSlug: tp.topicSlug,
+        articleRead: true,
+        questionsCorrect: tp.questionsCorrect,
+        questionsTotal: tp.questionsTotal,
+        completedAt,
+      })
+      tpCreated++
+    }
+    console.log(`  ✓ ${tpCreated} created, ${tpSkipped} skipped`)
+  }
 
   await client.end()
 }

@@ -21,6 +21,8 @@
     "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.2",
+    "gray-matter": "^4.0.3",
+    "marked": "^18.0.5",
     "nuxt": "^4.4.8",
     "postgres": "^3.4.9",
     "vue": "^3.5.34",
