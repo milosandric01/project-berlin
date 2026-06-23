@@ -57,6 +57,13 @@
       "when": 1781957946872,
       "tag": "0007_funny_the_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782237918812,
+      "tag": "0008_sparkling_quasar",
+      "breakpoints": true
     }
   ]
 }

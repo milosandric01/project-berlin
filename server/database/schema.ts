@@ -8,6 +8,7 @@ export const users = pgTable(
     passwordHash: text('password_hash').notNull(),
     firstName: text('first_name'),
     lastName: text('last_name'),
+    isAdmin: boolean('is_admin').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   t => ({
@@ -153,3 +154,23 @@ export const topicProgress = pgTable(
 
 export type TopicProgress = typeof topicProgress.$inferSelect
 export type NewTopicProgress = typeof topicProgress.$inferInsert
+
+// Admin-managed queue: controls which topics are published and in what order.
+export const topicQueue = pgTable(
+  'topic_queue',
+  {
+    id: serial('id').primaryKey(),
+    slug: text('slug').notNull(),
+    position: integer('position').notNull().default(0),
+    published: boolean('published').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  t => ({
+    slugIdx: uniqueIndex('topic_queue_slug_idx').on(t.slug),
+    positionIdx: index('topic_queue_position_idx').on(t.position),
+  }),
+)
+
+export type TopicQueue = typeof topicQueue.$inferSelect
+export type NewTopicQueue = typeof topicQueue.$inferInsert

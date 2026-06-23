@@ -22,7 +22,7 @@
               ? 'font-medium text-gray-900 bg-sand-400'
               : 'font-[450] text-gray-900 bg-transparent hover:bg-sand-200',
           ]"
-          @click="activeNav = n.id"
+          @click="handleNav(n.id)"
         >
           <Icon :name="n.icon" :size="16" class="text-gray-900" />
           {{ n.label }}
@@ -78,7 +78,7 @@ import { getLevelForStreak } from '~/utils/levels'
 
 definePageMeta({ layout: false, middleware: 'auth' })
 
-const { data: authData } = await useFetch<{ user: { email: string; firstName: string | null; lastName: string | null } | null }>('/api/auth/user')
+const { data: authData } = await useFetch<{ user: { email: string; firstName: string | null; lastName: string | null; isAdmin: boolean } | null }>('/api/auth/user')
 const user = computed(() => authData.value?.user)
 
 const userDisplayName = computed(() => {
@@ -110,12 +110,28 @@ const { data: todayData, refresh: refreshToday } = await useFetch<TodayData>('/a
 const streak = computed(() => todayData.value?.streak ?? 0)
 const currentLevel = computed(() => getLevelForStreak(streak.value))
 
-const navItems = [
-  { id: 'today', label: 'Today\'s practice', icon: 'lucide:sun' },
-  { id: 'history', label: 'Timeline', icon: 'lucide:git-commit-vertical' },
-  { id: 'streak', label: 'Streak', icon: 'lucide:flame' },
-]
+const isAdmin = computed(() => authData.value?.user?.isAdmin ?? false)
+
+const navItems = computed(() => {
+  const items = [
+    { id: 'today', label: 'Today\'s practice', icon: 'lucide:sun' },
+    { id: 'history', label: 'Timeline', icon: 'lucide:git-commit-vertical' },
+    { id: 'streak', label: 'Streak', icon: 'lucide:flame' },
+  ]
+  if (isAdmin.value) {
+    items.push({ id: 'admin', label: 'Topic Queue', icon: 'lucide:settings-2' })
+  }
+  return items
+})
 const activeNav = ref('today')
+
+function handleNav(id: string) {
+  if (id === 'admin') {
+    navigateTo('/admin/topics')
+    return
+  }
+  activeNav.value = id
+}
 
 async function logout() {
   userMenuOpen.value = false

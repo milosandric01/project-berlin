@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import matter from 'gray-matter'
 import { marked } from 'marked'
-import { eq } from 'drizzle-orm'
+import { eq, asc } from 'drizzle-orm'
 import { schema } from '~~/server/utils/db'
 
 export interface TopicQuestion {
@@ -27,16 +27,16 @@ type TopicProgressRow = typeof schema.topicProgress.$inferSelect
 
 let _cache: Topic[] | null = null
 
-/**
- * Load every lesson from the markdown files in server/content/topics,
- * parse frontmatter + body, and return them ordered by queue position.
- * Cached after first load (restart the dev server to pick up content edits).
- */
-export async function loadTopics(): Promise<Topic[]> {
-  if (_cache) return _cache
+/** Clear the cached topics so changes (publish, reorder) are picked up. */
+export function invalidateTopicCache(): void {
+  _cache = null
+}
 
-  // Nitro bundles server code, so __dirname points to .nuxt/dev/.
-  // Use process.cwd() which is always the project root in both dev and prod.
+/**
+ * Load all topic markdown files from disk and parse them.
+ * Returns raw parsed topics without filtering.
+ */
+function loadAllTopicFiles(): Topic[] {
   const topicsDir = join(process.cwd(), 'server', 'content', 'topics')
 
   let files: string[]
@@ -44,9 +44,7 @@ export async function loadTopics(): Promise<Topic[]> {
     files = readdirSync(topicsDir).filter(f => f.endsWith('.md')).sort()
   }
   catch {
-    // Content directory not found (e.g. deployed without assets)
-    _cache = []
-    return _cache
+    return []
   }
 
   const topics: Topic[] = []
@@ -81,8 +79,46 @@ export async function loadTopics(): Promise<Topic[]> {
     })
   }
 
-  topics.sort((a, b) => a.position - b.position || a.slug.localeCompare(b.slug))
-  _cache = topics
+  return topics
+}
+
+/**
+ * Load published topics in their queue order.
+ * If no topic_queue rows exist yet (fresh install), falls back to all topics
+ * sorted by filename position for backwards compatibility.
+ * Cached after first load — call invalidateTopicCache() to refresh.
+ */
+export async function loadTopics(): Promise<Topic[]> {
+  if (_cache) return _cache
+
+  const allTopics = loadAllTopicFiles()
+  const db = useDb()
+
+  const queueRows = await db
+    .select()
+    .from(schema.topicQueue)
+    .orderBy(asc(schema.topicQueue.position))
+
+  // Fallback: if queue table is empty, serve all topics (file order) for backwards compat.
+  if (queueRows.length === 0) {
+    allTopics.sort((a, b) => a.position - b.position || a.slug.localeCompare(b.slug))
+    _cache = allTopics
+    return _cache
+  }
+
+  // Only include published topics, ordered by queue position.
+  const publishedSlugs = queueRows.filter(r => r.published).map(r => r.slug)
+  const topicMap = new Map(allTopics.map(t => [t.slug, t]))
+  const result: Topic[] = []
+
+  for (let i = 0; i < publishedSlugs.length; i++) {
+    const topic = topicMap.get(publishedSlugs[i])
+    if (topic) {
+      result.push({ ...topic, position: i + 1 })
+    }
+  }
+
+  _cache = result
   return _cache
 }
 
