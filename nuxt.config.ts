@@ -7,7 +7,10 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      link: [{ rel: 'canonical', href: 'https://flowiz.dev' }],
+      link: [
+        { rel: 'canonical', href: 'https://flowiz.dev' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
+      ],
     },
   },
   runtimeConfig: {

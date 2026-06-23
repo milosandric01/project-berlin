@@ -2,14 +2,11 @@
   <div class="min-h-screen bg-sand-50 text-gray-900 font-sans">
 
     <!-- Nav -->
-    <nav class="max-w-3xl mx-auto flex items-center justify-between px-6 py-6">
+    <nav class="max-w-3xl mx-auto flex items-center px-6 py-6">
       <div class="flex items-center gap-1">
         <img src="/logo.svg" alt="flowiz" width="28" height="28" style="image-rendering: pixelated;" />
         <span class="text-xl font-semibold tracking-tight">Flowiz</span>
       </div>
-      <NuxtLink to="/login" class="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-        Sign in
-      </NuxtLink>
     </nav>
 
     <!-- Hero -->
@@ -89,16 +86,16 @@
 
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Flowiz — Daily practice for new-era software engineers',
-  description: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers stay technically sharp without the noise.',
-  ogTitle: 'Flowiz — Daily practice for new-era software engineers',
-  ogDescription: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers stay technically sharp without the noise.',
+  title: 'Flowiz | Daily practice for new era software engineers',
+  description: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers grow consistently without the noise.',
+  ogTitle: 'Flowiz | Daily practice for new era software engineers',
+  ogDescription: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers grow consistently without the noise.',
   ogUrl: 'https://flowiz.dev',
   ogType: 'website',
   ogSiteName: 'Flowiz',
   twitterCard: 'summary_large_image',
-  twitterTitle: 'Flowiz — Daily practice for new-era software engineers',
-  twitterDescription: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers stay technically sharp without the noise.',
+  twitterTitle: 'Flowiz | Daily practice for new era software engineers',
+  twitterDescription: 'One focused topic per day. Read, answer, build your streak. Flowiz helps engineers grow consistently without the noise.',
 })
 
 const email = ref('')
