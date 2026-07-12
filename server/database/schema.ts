@@ -155,12 +155,19 @@ export const topicProgress = pgTable(
 export type TopicProgress = typeof topicProgress.$inferSelect
 export type NewTopicProgress = typeof topicProgress.$inferInsert
 
-// Admin-managed queue: controls which topics are published and in what order.
+// Admin-managed topic content + queue.
+// Stores full article content, questions, and publish/order state.
 export const topicQueue = pgTable(
   'topic_queue',
   {
     id: serial('id').primaryKey(),
     slug: text('slug').notNull(),
+    title: text('title').notNull().default(''),
+    subtitle: text('subtitle').notNull().default(''),
+    category: text('category').notNull().default('General'),
+    readMinutes: integer('read_minutes').notNull().default(3),
+    articleMarkdown: text('article_markdown').notNull().default(''),
+    questions: text('questions').notNull().default('[]'), // JSON string of TopicQuestion[]
     position: integer('position').notNull().default(0),
     published: boolean('published').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

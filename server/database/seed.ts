@@ -3,7 +3,10 @@ import bcrypt from 'bcryptjs'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
-import { users, skills, topicProgress } from './schema'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import matter from 'gray-matter'
+import { users, skills, topicProgress, topicQueue } from './schema'
 
 const SEED_USERS = [
   { email: 'kermit@flowiz.dev', password: 'kermit', firstName: 'Kermit', lastName: 'Muppet', isAdmin: true },
@@ -163,6 +166,65 @@ async function main() {
     }
     console.log(`  ✓ ${tpCreated} created, ${tpSkipped} skipped`)
   }
+
+  // Topic Queue – import markdown files into DB as published topics
+  console.log('\nTopic queue:')
+  const topicsDir = join(process.cwd(), 'server', 'content', 'topics')
+  let topicFiles: string[] = []
+  try {
+    topicFiles = readdirSync(topicsDir).filter(f => f.endsWith('.md')).sort()
+  }
+  catch { /* empty */ }
+
+  let tqCreated = 0
+  let tqSkipped = 0
+  for (const [i, file] of topicFiles.entries()) {
+    const raw = readFileSync(join(topicsDir, file), 'utf8')
+    const { data, content } = matter(raw)
+    const base = file.replace(/\.md$/, '')
+    const orderMatch = base.match(/^(\d+)[-_](.+)$/)
+    const fileSlug = String(data.slug ?? (orderMatch ? orderMatch[2] : base))
+
+    const existing = await db.select().from(topicQueue).where(eq(topicQueue.slug, fileSlug)).limit(1)
+    if (existing.length > 0) {
+      // Backfill content if row exists but has no article content
+      if (!existing[0].articleMarkdown) {
+        const questions = Array.isArray(data.questions) ? data.questions : []
+        await db.update(topicQueue).set({
+          title: String(data.title ?? fileSlug),
+          subtitle: String(data.subtitle ?? ''),
+          category: String(data.category ?? 'General'),
+          readMinutes: Number(data.readMinutes ?? 3),
+          articleMarkdown: content.trim(),
+          questions: JSON.stringify(questions),
+          position: i + 1,
+          published: true,
+          updatedAt: new Date(),
+        }).where(eq(topicQueue.slug, fileSlug))
+        tqCreated++
+      }
+      else {
+        tqSkipped++
+      }
+      continue
+    }
+
+    const questions = Array.isArray(data.questions) ? data.questions : []
+
+    await db.insert(topicQueue).values({
+      slug: fileSlug,
+      title: String(data.title ?? fileSlug),
+      subtitle: String(data.subtitle ?? ''),
+      category: String(data.category ?? 'General'),
+      readMinutes: Number(data.readMinutes ?? 3),
+      articleMarkdown: content.trim(),
+      questions: JSON.stringify(questions),
+      position: i + 1,
+      published: true,
+    })
+    tqCreated++
+  }
+  console.log(`  ✓ ${tqCreated} published, ${tqSkipped} skipped`)
 
   await client.end()
 }

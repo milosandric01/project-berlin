@@ -1,84 +1,56 @@
-import { eq, asc } from 'drizzle-orm'
+import { asc } from 'drizzle-orm'
 import { schema } from '~~/server/utils/db'
 import { requireAdmin } from '~~/server/utils/admin'
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import matter from 'gray-matter'
 
 /**
  * GET /api/admin/topics
- * Returns all .md topic files with their publish/order status from the DB.
+ * Returns all topics from the database with their content and publish status.
  */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
 
-  // Load all topic files from disk
-  const topicsDir = join(process.cwd(), 'server', 'content', 'topics')
-  let files: string[] = []
-  try {
-    files = readdirSync(topicsDir).filter(f => f.endsWith('.md')).sort()
-  }
-  catch {
-    files = []
-  }
-
-  const allTopics = files.map((file) => {
-    const raw = readFileSync(join(topicsDir, file), 'utf8')
-    const { data } = matter(raw)
-    const base = file.replace(/\.md$/, '')
-    const orderMatch = base.match(/^(\d+)[-_](.+)$/)
-    const slug = String(data.slug ?? (orderMatch ? orderMatch[2] : base))
-
-    const questions = Array.isArray(data.questions)
-      ? data.questions.map((q: any) => ({
-          prompt: String(q.prompt ?? ''),
-          options: Array.isArray(q.options) ? q.options.map((o: any) => String(o)) : [],
-          answer: Number(q.answer ?? 0),
-          explanation: String(q.explanation ?? ''),
-        }))
-      : []
-
-    return {
-      slug,
-      file,
-      title: String(data.title ?? slug),
-      subtitle: String(data.subtitle ?? ''),
-      category: String(data.category ?? 'General'),
-      readMinutes: Number(data.readMinutes ?? 3),
-      questionsCount: questions.length,
-      questions,
-    }
-  })
-
-  // Get queue state from DB
   const db = useDb()
-  const queueRows = await db
+  const rows = await db
     .select()
     .from(schema.topicQueue)
     .orderBy(asc(schema.topicQueue.position))
 
-  const queueMap = new Map(queueRows.map(r => [r.slug, r]))
-
-  // If queue is empty, treat all topics as published (matches loadTopics fallback)
-  const fallbackMode = queueRows.length === 0
-
-  // Merge file data with queue state
-  const result = allTopics.map((t, idx) => {
-    const q = queueMap.get(t.slug)
-    return {
-      ...t,
-      published: fallbackMode ? true : (q?.published ?? false),
-      position: fallbackMode ? idx + 1 : (q?.position ?? null),
-    }
-  })
+  const topics = rows.map(r => ({
+    slug: r.slug,
+    title: r.title,
+    subtitle: r.subtitle,
+    category: r.category,
+    readMinutes: r.readMinutes,
+    articleMarkdown: r.articleMarkdown,
+    questionsCount: safeParseLength(r.questions),
+    questions: safeParseQuestions(r.questions),
+    published: r.published,
+    position: r.position,
+  }))
 
   // Sort: published first (by position), then unpublished (alphabetical)
-  result.sort((a, b) => {
-    if (a.published && b.published) return (a.position ?? 0) - (b.position ?? 0)
+  topics.sort((a, b) => {
+    if (a.published && b.published) return a.position - b.position
     if (a.published) return -1
     if (b.published) return 1
     return a.slug.localeCompare(b.slug)
   })
 
-  return { topics: result }
+  return { topics }
 })
+
+function safeParseLength(json: string): number {
+  try {
+    const arr = JSON.parse(json)
+    return Array.isArray(arr) ? arr.length : 0
+  }
+  catch { return 0 }
+}
+
+function safeParseQuestions(json: string): any[] {
+  try {
+    const arr = JSON.parse(json)
+    return Array.isArray(arr) ? arr : []
+  }
+  catch { return [] }
+}

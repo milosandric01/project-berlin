@@ -1,6 +1,3 @@
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import matter from 'gray-matter'
 import { marked } from 'marked'
 import { eq, asc } from 'drizzle-orm'
 import { schema } from '~~/server/utils/db'
@@ -32,93 +29,50 @@ export function invalidateTopicCache(): void {
   _cache = null
 }
 
-/**
- * Load all topic markdown files from disk and parse them.
- * Returns raw parsed topics without filtering.
- */
-function loadAllTopicFiles(): Topic[] {
-  const topicsDir = join(process.cwd(), 'server', 'content', 'topics')
-
-  let files: string[]
+/** Parse a JSON string of questions safely. */
+function parseQuestions(raw: string): TopicQuestion[] {
   try {
-    files = readdirSync(topicsDir).filter(f => f.endsWith('.md')).sort()
+    const arr = JSON.parse(raw)
+    if (!Array.isArray(arr)) return []
+    return arr.map((q: any) => ({
+      prompt: String(q.prompt ?? ''),
+      options: Array.isArray(q.options) ? q.options.map((o: any) => String(o)) : [],
+      answer: Number(q.answer ?? 0),
+      explanation: String(q.explanation ?? ''),
+    }))
   }
   catch {
     return []
   }
-
-  const topics: Topic[] = []
-
-  for (const file of files) {
-    const raw = readFileSync(join(topicsDir, file), 'utf8')
-    const { data, content } = matter(raw)
-
-    const base = file.replace(/\.md$/, '')
-    const orderMatch = base.match(/^(\d+)[-_](.+)$/)
-    const position = orderMatch ? Number.parseInt(orderMatch[1], 10) : 9999
-    const slug = String(data.slug ?? (orderMatch ? orderMatch[2] : base))
-
-    const questions: TopicQuestion[] = Array.isArray(data.questions)
-      ? data.questions.map((q: any) => ({
-          prompt: String(q.prompt ?? ''),
-          options: Array.isArray(q.options) ? q.options.map((o: any) => String(o)) : [],
-          answer: Number(q.answer ?? 0),
-          explanation: String(q.explanation ?? ''),
-        }))
-      : []
-
-    topics.push({
-      slug,
-      position,
-      title: String(data.title ?? slug),
-      subtitle: String(data.subtitle ?? ''),
-      category: String(data.category ?? 'General'),
-      readMinutes: Number(data.readMinutes ?? 3),
-      articleHtml: marked.parse(content) as string,
-      questions,
-    })
-  }
-
-  return topics
 }
 
 /**
- * Load published topics in their queue order.
- * If no topic_queue rows exist yet (fresh install), falls back to all topics
- * sorted by filename position for backwards compatibility.
+ * Load published topics from the database in queue order.
  * Cached after first load — call invalidateTopicCache() to refresh.
  */
 export async function loadTopics(): Promise<Topic[]> {
   if (_cache) return _cache
 
-  const allTopics = loadAllTopicFiles()
   const db = useDb()
 
-  const queueRows = await db
+  const rows = await db
     .select()
     .from(schema.topicQueue)
+    .where(eq(schema.topicQueue.published, true))
     .orderBy(asc(schema.topicQueue.position))
 
-  // Fallback: if queue table is empty, serve all topics (file order) for backwards compat.
-  if (queueRows.length === 0) {
-    allTopics.sort((a, b) => a.position - b.position || a.slug.localeCompare(b.slug))
-    _cache = allTopics
-    return _cache
-  }
+  const topics: Topic[] = rows.map((row, i) => ({
+    slug: row.slug,
+    position: i + 1,
+    title: row.title,
+    subtitle: row.subtitle,
+    category: row.category,
+    readMinutes: row.readMinutes,
+    articleHtml: marked.parse(row.articleMarkdown) as string,
+    questions: parseQuestions(row.questions),
+  }))
 
-  // Only include published topics, ordered by queue position.
-  const publishedSlugs = queueRows.filter(r => r.published).map(r => r.slug)
-  const topicMap = new Map(allTopics.map(t => [t.slug, t]))
-  const result: Topic[] = []
-
-  for (let i = 0; i < publishedSlugs.length; i++) {
-    const topic = topicMap.get(publishedSlugs[i])
-    if (topic) {
-      result.push({ ...topic, position: i + 1 })
-    }
-  }
-
-  _cache = result
+  _cache = topics
   return _cache
 }
 

@@ -9,7 +9,12 @@
           </NuxtLink>
           <h1 class="text-lg font-semibold">Topic Queue</h1>
         </div>
-        <span class="text-xs font-mono text-gray-400 uppercase tracking-wide">Admin</span>
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors"
+          @click="openCreate"
+        >
+          + New Topic
+        </button>
       </div>
     </header>
 
@@ -70,7 +75,7 @@
                 </div>
 
                 <!-- Topic info -->
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 cursor-pointer" @click="openEdit(topic)">
                   <div class="flex items-center gap-2 mb-0.5">
                     <h3 class="text-sm font-medium text-gray-900 truncate">{{ topic.title }}</h3>
                     <span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 flex-none">{{ topic.category }}</span>
@@ -79,6 +84,14 @@
                     {{ topic.readMinutes }} min read · {{ topic.questionsCount }} questions · <span class="font-mono">{{ topic.slug }}</span>
                   </div>
                 </div>
+
+                <!-- Edit button -->
+                <button
+                  class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors flex-none"
+                  @click="openEdit(topic)"
+                >
+                  <Icon name="lucide:pencil" :size="16" />
+                </button>
 
                 <!-- Expand questions -->
                 <button
@@ -151,7 +164,7 @@
             >
               <div class="px-5 py-4 flex items-center gap-4">
                 <!-- Topic info -->
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 cursor-pointer" @click="openEdit(topic)">
                   <div class="flex items-center gap-2 mb-0.5">
                     <h3 class="text-sm font-medium text-gray-900 truncate">{{ topic.title }}</h3>
                     <span class="text-[11px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 flex-none">{{ topic.category }}</span>
@@ -160,6 +173,14 @@
                     {{ topic.readMinutes }} min read · {{ topic.questionsCount }} questions · <span class="font-mono">{{ topic.slug }}</span>
                   </div>
                 </div>
+
+                <!-- Edit button -->
+                <button
+                  class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-colors flex-none"
+                  @click="openEdit(topic)"
+                >
+                  <Icon name="lucide:pencil" :size="16" />
+                </button>
 
                 <!-- Expand questions -->
                 <button
@@ -202,6 +223,126 @@
         </section>
       </div>
     </div>
+
+    <!-- Create / Edit Modal -->
+    <div v-if="showModal" class="fixed inset-0 z-50 flex items-start justify-center pt-10 bg-black/40" @click.self="showModal = false">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+          <h2 class="text-base font-semibold">{{ editingSlug ? 'Edit Topic' : 'New Topic' }}</h2>
+          <button class="text-gray-400 hover:text-gray-700" @click="showModal = false">
+            <Icon name="lucide:x" :size="18" />
+          </button>
+        </div>
+
+        <div class="px-6 py-5 flex flex-col gap-4">
+          <!-- Slug (only editable when creating) -->
+          <div>
+            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Slug</label>
+            <input
+              v-model="form.slug"
+              :disabled="!!editingSlug"
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 disabled:bg-gray-50 disabled:text-gray-400"
+              placeholder="e.g. how-dns-works"
+            />
+          </div>
+
+          <!-- Title -->
+          <div>
+            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Title</label>
+            <input
+              v-model="form.title"
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+              placeholder="Topic title"
+            />
+          </div>
+
+          <!-- Subtitle -->
+          <div>
+            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Subtitle</label>
+            <input
+              v-model="form.subtitle"
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+              placeholder="Short description"
+            />
+          </div>
+
+          <!-- Category + Read time -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Category</label>
+              <input
+                v-model="form.category"
+                class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                placeholder="e.g. Networking"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Read time (min)</label>
+              <input
+                v-model.number="form.readMinutes"
+                type="number"
+                min="1"
+                class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+              />
+            </div>
+          </div>
+
+          <!-- Article markdown -->
+          <div>
+            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Article (Markdown)</label>
+            <textarea
+              v-model="form.articleMarkdown"
+              rows="12"
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900/10 resize-y"
+              placeholder="Write the article content in Markdown..."
+            />
+          </div>
+
+          <!-- Questions (JSON) -->
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Questions (JSON)</label>
+              <button
+                v-if="!form.questionsRaw"
+                class="text-xs text-gray-400 hover:text-gray-700"
+                @click="form.questionsRaw = JSON.stringify([{ prompt: '', options: ['', '', '', ''], answer: 0, explanation: '' }], null, 2)"
+              >
+                Add template
+              </button>
+            </div>
+            <textarea
+              v-model="form.questionsRaw"
+              rows="10"
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-gray-900/10 resize-y"
+              placeholder='[{ "prompt": "...", "options": ["A","B","C","D"], "answer": 0, "explanation": "..." }]'
+            />
+            <p v-if="questionsError" class="text-xs text-red-500 mt-1">{{ questionsError }}</p>
+          </div>
+
+          <!-- Modal error -->
+          <div v-if="modalError" class="bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-red-700 text-sm">
+            {{ modalError }}
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
+          <button
+            class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            @click="showModal = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+            :disabled="modalSaving"
+            @click="saveTopic"
+          >
+            {{ modalSaving ? 'Saving...' : (editingSlug ? 'Save Changes' : 'Create Topic') }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -217,15 +358,15 @@ interface TopicQuestion {
 
 interface TopicItem {
   slug: string
-  file: string
   title: string
   subtitle: string
   category: string
   readMinutes: number
+  articleMarkdown: string
   questionsCount: number
   questions: TopicQuestion[]
   published: boolean
-  position: number | null
+  position: number
 }
 
 const loading = ref(true)
@@ -236,7 +377,106 @@ const orderDirty = ref(false)
 const saving = ref(false)
 const expanded = reactive(new Set<string>())
 
+// Modal state
+const showModal = ref(false)
+const editingSlug = ref<string | null>(null)
+const modalSaving = ref(false)
+const modalError = ref<string | null>(null)
+const form = reactive({
+  slug: '',
+  title: '',
+  subtitle: '',
+  category: 'General',
+  readMinutes: 3,
+  articleMarkdown: '',
+  questionsRaw: '',
+})
+
+const questionsError = computed(() => {
+  if (!form.questionsRaw.trim()) return null
+  try {
+    const arr = JSON.parse(form.questionsRaw)
+    if (!Array.isArray(arr)) return 'Must be a JSON array'
+    return null
+  }
+  catch {
+    return 'Invalid JSON'
+  }
+})
+
 const draftTopics = computed(() => topics.value.filter(t => !t.published))
+
+function openCreate() {
+  editingSlug.value = null
+  modalError.value = null
+  form.slug = ''
+  form.title = ''
+  form.subtitle = ''
+  form.category = 'General'
+  form.readMinutes = 3
+  form.articleMarkdown = ''
+  form.questionsRaw = '[]'
+  showModal.value = true
+}
+
+function openEdit(topic: TopicItem) {
+  editingSlug.value = topic.slug
+  modalError.value = null
+  form.slug = topic.slug
+  form.title = topic.title
+  form.subtitle = topic.subtitle
+  form.category = topic.category
+  form.readMinutes = topic.readMinutes
+  form.articleMarkdown = topic.articleMarkdown
+  form.questionsRaw = JSON.stringify(topic.questions, null, 2)
+  showModal.value = true
+}
+
+async function saveTopic() {
+  if (questionsError.value) return
+  modalSaving.value = true
+  modalError.value = null
+
+  const questions = form.questionsRaw.trim() ? JSON.parse(form.questionsRaw) : []
+
+  try {
+    if (editingSlug.value) {
+      await $fetch(`/api/admin/topics/${editingSlug.value}`, {
+        method: 'PATCH',
+        body: {
+          title: form.title,
+          subtitle: form.subtitle,
+          category: form.category,
+          readMinutes: form.readMinutes,
+          articleMarkdown: form.articleMarkdown,
+          questions,
+        },
+      })
+    }
+    else {
+      await $fetch('/api/admin/topics', {
+        method: 'POST',
+        body: {
+          slug: form.slug,
+          title: form.title,
+          subtitle: form.subtitle,
+          category: form.category,
+          readMinutes: form.readMinutes,
+          articleMarkdown: form.articleMarkdown,
+          questions,
+        },
+      })
+    }
+    showModal.value = false
+    await fetchTopics()
+  }
+  catch (e: any) {
+    modalError.value = e?.data?.message || 'Failed to save topic'
+  }
+  finally {
+    modalSaving.value = false
+  }
+}
 
 async function fetchTopics() {
   loading.value = true

@@ -19,25 +19,10 @@ export default defineEventHandler(async (event) => {
   const db = useDb()
 
   for (const item of body.order) {
-    const [existing] = await db
-      .select()
-      .from(schema.topicQueue)
+    await db
+      .update(schema.topicQueue)
+      .set({ position: item.position, updatedAt: new Date() })
       .where(eq(schema.topicQueue.slug, item.slug))
-      .limit(1)
-
-    if (existing) {
-      await db
-        .update(schema.topicQueue)
-        .set({ position: item.position, updatedAt: new Date() })
-        .where(eq(schema.topicQueue.slug, item.slug))
-    }
-    else {
-      await db.insert(schema.topicQueue).values({
-        slug: item.slug,
-        position: item.position,
-        published: false,
-      })
-    }
   }
 
   // Invalidate topic cache so new order is picked up
